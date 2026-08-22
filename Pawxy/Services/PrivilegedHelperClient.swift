@@ -6,6 +6,31 @@
 import Foundation
 import ServiceManagement
 import Combine
+import CryptoKit
+
+nonisolated struct PrivilegedHelperInstallationIdentity: Codable, Equatable {
+    let bundlePath: String
+    let executableFingerprint: String
+
+    static func make(
+        bundlePath: String,
+        appExecutable: Data,
+        helperExecutable: Data
+    ) -> Self {
+        var hasher = SHA256()
+        hasher.update(data: Data("Pawxy application\0".utf8))
+        hasher.update(data: appExecutable)
+        hasher.update(data: Data("Pawxy privileged helper\0".utf8))
+        hasher.update(data: helperExecutable)
+
+        return Self(
+            bundlePath: URL(fileURLWithPath: bundlePath).standardizedFileURL.path,
+            executableFingerprint: hasher.finalize().map {
+                String(format: "%02x", $0)
+            }.joined()
+        )
+    }
+}
 
 nonisolated struct PrivilegedHelperClient {
     func perform(_ operation: PawxyPrivilegedOperation) throws -> PawxyPrivilegedResponse {
@@ -140,11 +165,36 @@ final class PrivilegedHelperController: ObservableObject {
     private let service = SMAppService.daemon(
         plistName: PawxyPrivilegedHelperConstants.launchDaemonPlistName
     )
+    private let defaults = UserDefaults.standard
+    private let installationIdentityKey = "privilegedHelperInstallationIdentity"
+    private var automaticMigrationIdentity: PrivilegedHelperInstallationIdentity?
+    private var verificationTask: Task<Void, Never>?
 
     private init() {}
 
     func prepareIfNeeded() {
-        refresh()
+        guard !isWorking else { return }
+        if let bundleProblem = embeddedServiceProblem() {
+            state = .missingFromBundle(bundleProblem)
+            return
+        }
+
+        guard service.status == .enabled,
+              let currentIdentity = embeddedServiceIdentity()
+        else {
+            refresh()
+            return
+        }
+
+        let installedIdentity = storedInstallationIdentity()
+        if let installedIdentity, installedIdentity != currentIdentity {
+            migrateEmbeddedService(to: currentIdentity)
+        } else {
+            verifyEnabledService(
+                identity: currentIdentity,
+                automaticallyMigrateIfUnavailable: installedIdentity == nil
+            )
+        }
     }
 
     func install() {
@@ -174,7 +224,7 @@ final class PrivilegedHelperController: ObservableObject {
             @unknown default:
                 try service.register()
             }
-            refresh()
+            refresh(retryCount: 6)
         } catch {
             updateState(afterRegistrationError: error)
         }
@@ -201,13 +251,17 @@ final class PrivilegedHelperController: ObservableObject {
                 try service.unregister()
             }
             try service.register()
-            refresh()
+            refresh(retryCount: 6)
         } catch {
             updateState(afterRegistrationError: error)
         }
     }
 
     func refresh() {
+        refresh(retryCount: 3)
+    }
+
+    private func refresh(retryCount: Int) {
         if let bundleProblem = embeddedServiceProblem() {
             state = .missingFromBundle(bundleProblem)
             return
@@ -215,13 +269,10 @@ final class PrivilegedHelperController: ObservableObject {
 
         switch service.status {
         case .enabled:
-            state = .checking
-            Task {
-                let isReachable = await Task.detached {
-                    PrivilegedHelperClient().ping()
-                }.value
-                state = isReachable ? .ready : .unreachable
-            }
+            verifyEnabledService(
+                identity: embeddedServiceIdentity(),
+                retryCount: retryCount
+            )
         case .requiresApproval:
             state = .requiresApproval
         case .notRegistered:
@@ -259,6 +310,82 @@ final class PrivilegedHelperController: ObservableObject {
         }
 
         return nil
+    }
+
+    private func embeddedServiceIdentity() -> PrivilegedHelperInstallationIdentity? {
+        let bundleURL = Bundle.main.bundleURL.standardizedFileURL
+        let helperURL = bundleURL
+            .appendingPathComponent("Contents/Resources/PawxyHelper", isDirectory: false)
+        guard let appExecutableURL = Bundle.main.executableURL,
+              let appExecutable = try? Data(contentsOf: appExecutableURL, options: .mappedIfSafe),
+              let helperExecutable = try? Data(contentsOf: helperURL, options: .mappedIfSafe)
+        else {
+            return nil
+        }
+
+        return PrivilegedHelperInstallationIdentity.make(
+            bundlePath: bundleURL.path,
+            appExecutable: appExecutable,
+            helperExecutable: helperExecutable
+        )
+    }
+
+    private func storedInstallationIdentity() -> PrivilegedHelperInstallationIdentity? {
+        guard let data = defaults.data(forKey: installationIdentityKey) else { return nil }
+        return try? JSONDecoder().decode(PrivilegedHelperInstallationIdentity.self, from: data)
+    }
+
+    private func storeInstallationIdentity(_ identity: PrivilegedHelperInstallationIdentity) {
+        guard let data = try? JSONEncoder().encode(identity) else { return }
+        defaults.set(data, forKey: installationIdentityKey)
+    }
+
+    private func verifyEnabledService(
+        identity: PrivilegedHelperInstallationIdentity?,
+        retryCount: Int = 3,
+        automaticallyMigrateIfUnavailable: Bool = false
+    ) {
+        verificationTask?.cancel()
+        state = .checking
+        verificationTask = Task { [weak self] in
+            let isReachable = await Self.pingHelper(attempts: retryCount)
+            guard !Task.isCancelled, let self else { return }
+
+            if isReachable {
+                if let identity {
+                    storeInstallationIdentity(identity)
+                }
+                state = .ready
+            } else if automaticallyMigrateIfUnavailable, let identity {
+                migrateEmbeddedService(to: identity)
+            } else {
+                state = .unreachable
+            }
+        }
+    }
+
+    private func migrateEmbeddedService(to identity: PrivilegedHelperInstallationIdentity) {
+        guard automaticMigrationIdentity != identity else {
+            verifyEnabledService(identity: identity, retryCount: 6)
+            return
+        }
+        automaticMigrationIdentity = identity
+        reinstallEmbeddedService()
+    }
+
+    nonisolated private static func pingHelper(attempts: Int) async -> Bool {
+        for attempt in 0..<max(attempts, 1) {
+            if Task.isCancelled { return false }
+            let isReachable = await Task.detached {
+                PrivilegedHelperClient().ping(timeout: 1.5)
+            }.value
+            if isReachable { return true }
+
+            if attempt + 1 < attempts {
+                try? await Task.sleep(for: .milliseconds(300))
+            }
+        }
+        return false
     }
 
     private func updateState(afterRegistrationError error: Error) {

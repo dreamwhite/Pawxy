@@ -59,7 +59,7 @@ struct AppRootView: View {
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
-                helperController.refresh()
+                helperController.prepareIfNeeded()
             }
         }
     }

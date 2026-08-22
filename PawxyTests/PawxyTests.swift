@@ -12,6 +12,33 @@ import Testing
 @MainActor
 struct PawxyTests {
 
+    @Test func helperInstallationIdentityTracksBundleAndExecutableChanges() {
+        let baseline = PrivilegedHelperInstallationIdentity.make(
+            bundlePath: "/Applications/Pawxy.app",
+            appExecutable: Data("app-v1".utf8),
+            helperExecutable: Data("helper-v1".utf8)
+        )
+        let identical = PrivilegedHelperInstallationIdentity.make(
+            bundlePath: "/Applications/Pawxy.app",
+            appExecutable: Data("app-v1".utf8),
+            helperExecutable: Data("helper-v1".utf8)
+        )
+        let moved = PrivilegedHelperInstallationIdentity.make(
+            bundlePath: "/Users/example/Desktop/Pawxy.app",
+            appExecutable: Data("app-v1".utf8),
+            helperExecutable: Data("helper-v1".utf8)
+        )
+        let updated = PrivilegedHelperInstallationIdentity.make(
+            bundlePath: "/Applications/Pawxy.app",
+            appExecutable: Data("app-v2".utf8),
+            helperExecutable: Data("helper-v2".utf8)
+        )
+
+        #expect(baseline == identical)
+        #expect(baseline != moved)
+        #expect(baseline != updated)
+    }
+
     @Test func localDomainRoundTripsThroughJSON() throws {
         let domain = LocalDomain(
             domain: "museo.test",

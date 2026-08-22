@@ -9,7 +9,7 @@ nonisolated enum PawxyPrivilegedHelperConstants {
     static let machServiceName = "com.dreamcorp.Pawxy.Helper"
     static let launchDaemonPlistName = "com.dreamcorp.Pawxy.Helper.plist"
     static let clientBundleIdentifier = "com.dreamcorp.Pawxy"
-    static let protocolVersion = 1
+    static let protocolVersion = 2
 }
 
 nonisolated enum PawxyPrivilegedHelperBundleLayout {
