@@ -1,0 +1,2384 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ""
+          }
+        }
+      }
+    },
+    "·": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "·"
+          }
+        }
+      }
+    },
+    "%@ Click to test again.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ Fai clic per ripetere il test."
+          }
+        }
+      }
+    },
+    "%@ resolves to %@ through dnsmasq. Click to test again.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ resolves to %2$@ through dnsmasq. Click to test again."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ si risolve in %2$@ tramite dnsmasq. Fai clic per ripetere il test."
+          }
+        }
+      }
+    },
+    "%@ should resolve to %@, but dnsmasq returned %@. Click to test again.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ should resolve to %2$@, but dnsmasq returned %3$@. Click to test again."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ dovrebbe risolversi in %2$@, ma dnsmasq ha restituito %3$@. Fai clic per ripetere il test."
+          }
+        }
+      }
+    },
+    "%@ uses .local, which macOS reserves for Bonjour/mDNS. Use a suffix such as .pawxy or .test.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ usa .local, che macOS riserva a Bonjour/mDNS. Usa un suffisso come .pawxy o .test."
+          }
+        }
+      }
+    },
+    "%lld existing domains are skipped.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld domini esistenti vengono ignorati."
+          }
+        }
+      }
+    },
+    "%lld mappings": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld mapping"
+          }
+        }
+      }
+    },
+    "%lld results": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld risultati"
+          }
+        }
+      }
+    },
+    "%lld supported mappings found": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trovati %1$lld mapping supportati"
+          }
+        }
+      }
+    },
+    "© 2026 Dreamcorp. All rights reserved.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "© 2026 Dreamcorp. Tutti i diritti riservati."
+          }
+        }
+      }
+    },
+    "1 existing domain is skipped.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 dominio esistente viene ignorato."
+          }
+        }
+      }
+    },
+    "1 mapping": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 mapping"
+          }
+        }
+      }
+    },
+    "1 result": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 risultato"
+          }
+        }
+      }
+    },
+    "1 supported mapping found": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trovato 1 mapping supportato"
+          }
+        }
+      }
+    },
+    "A dnsmasq directive for %@ already exists.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esiste già una direttiva dnsmasq per %1$@."
+          }
+        }
+      }
+    },
+    "Active": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Attivo"
+          }
+        }
+      }
+    },
+    "Add domain": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiungi dominio"
+          }
+        }
+      }
+    },
+    "Add local domain": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiungi dominio locale"
+          }
+        }
+      }
+    },
+    "Allow Pawxy in System Settings › General › Login Items & Extensions.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consenti Pawxy in Impostazioni di Sistema › Generali › Elementi login ed estensioni."
+          }
+        }
+      }
+    },
+    "Allow Pawxy to manage DNS": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consenti a Pawxy di gestire il DNS"
+          }
+        }
+      }
+    },
+    "Already exists": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esiste già"
+          }
+        }
+      }
+    },
+    "Approval required": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Approvazione richiesta"
+          }
+        }
+      }
+    },
+    "Automatically check for updates": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controlla automaticamente gli aggiornamenti"
+          }
+        }
+      }
+    },
+    "Automatically download updates": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scarica automaticamente gli aggiornamenti"
+          }
+        }
+      }
+    },
+    "Backup": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backup"
+          }
+        }
+      }
+    },
+    "Behavior": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comportamento"
+          }
+        }
+      }
+    },
+    "Bonjour conflict": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conflitto Bonjour"
+          }
+        }
+      }
+    },
+    "brew install dnsmasq": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "brew install dnsmasq"
+          }
+        }
+      }
+    },
+    "Bundle identifier": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Identificatore bundle"
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Annulla"
+          }
+        }
+      }
+    },
+    "Check again": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verifica di nuovo"
+          }
+        }
+      }
+    },
+    "Check for Updates Now…": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controlla aggiornamenti ora…"
+          }
+        }
+      }
+    },
+    "Check for Updates…": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controlla aggiornamenti…"
+          }
+        }
+      }
+    },
+    "Checking helper…": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verifica dell'helper…"
+          }
+        }
+      }
+    },
+    "Checking your development environment…": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verifica dell'ambiente di sviluppo…"
+          }
+        }
+      }
+    },
+    "Checking…": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verifica…"
+          }
+        }
+      }
+    },
+    "Choose a Pawxy JSON backup to review before importing.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scegli un backup JSON di Pawxy da controllare prima dell'importazione."
+          }
+        }
+      }
+    },
+    "Configuration sources": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Origini configurazione"
+          }
+        }
+      }
+    },
+    "Configure a hostname mapping for local development.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configura un mapping hostname per lo sviluppo locale."
+          }
+        }
+      }
+    },
+    "Continue": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continua"
+          }
+        }
+      }
+    },
+    "Continue read-only": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continua in sola lettura"
+          }
+        }
+      }
+    },
+    "Could not back up %@: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Could not back up %1$@: %2$@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile creare il backup di %1$@: %2$@"
+          }
+        }
+      }
+    },
+    "Could not import backup": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile importare il backup"
+          }
+        }
+      }
+    },
+    "Could not load saved domains: %@": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile caricare i domini salvati: %1$@"
+          }
+        }
+      }
+    },
+    "Could not query the macOS resolver: %@": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile interrogare il resolver di macOS: %1$@"
+          }
+        }
+      }
+    },
+    "Could not read %@: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Could not read %1$@: %2$@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile leggere %1$@: %2$@"
+          }
+        }
+      }
+    },
+    "Could not read the Pawxy backup: %@": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile leggere il backup di Pawxy: %1$@"
+          }
+        }
+      }
+    },
+    "Could not run the DNS test: %@": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile eseguire il test DNS: %1$@"
+          }
+        }
+      }
+    },
+    "Could not save domains: %@": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile salvare i domini: %1$@"
+          }
+        }
+      }
+    },
+    "Could not save the Pawxy backup: %@": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile salvare il backup di Pawxy: %1$@"
+          }
+        }
+      }
+    },
+    "Could not update %@: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Could not update %1$@: %2$@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile aggiornare %1$@: %2$@"
+          }
+        }
+      }
+    },
+    "Could not update dnsmasq": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile aggiornare dnsmasq"
+          }
+        }
+      }
+    },
+    "Coverage": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copertura"
+          }
+        }
+      }
+    },
+    "Create and manage dnsmasq development hostnames.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crea e gestisci hostname di sviluppo dnsmasq."
+          }
+        }
+      }
+    },
+    "Created in Pawxy": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Creato in Pawxy"
+          }
+        }
+      }
+    },
+    "Default IPv4 address": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Indirizzo IPv4 predefinito"
+          }
+        }
+      }
+    },
+    "Delete": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elimina"
+          }
+        }
+      }
+    },
+    "Delete %@?": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminare %1$@?"
+          }
+        }
+      }
+    },
+    "Delete…": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elimina…"
+          }
+        }
+      }
+    },
+    "Disabled": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disabilitato"
+          }
+        }
+      }
+    },
+    "DNS": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DNS"
+          }
+        }
+      }
+    },
+    "DNS changes use Pawxy’s signed XPC service without AppleScript prompts.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le modifiche DNS usano il servizio XPC firmato di Pawxy senza richieste AppleScript."
+          }
+        }
+      }
+    },
+    "DNS zone": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zona DNS"
+          }
+        }
+      }
+    },
+    "DNS zones": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zone DNS"
+          }
+        }
+      }
+    },
+    "dnsmasq": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "dnsmasq"
+          }
+        }
+      }
+    },
+    "dnsmasq configuration": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configurazione dnsmasq"
+          }
+        }
+      }
+    },
+    "dnsmasq did not answer the DNS query.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "dnsmasq non ha risposto alla richiesta DNS."
+          }
+        }
+      }
+    },
+    "dnsmasq is the source of truth. Pawxy records each mapping’s source file and line; new Pawxy domains use one descriptive .conf file per mapping. Existing external files retain their original layout.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "dnsmasq è la fonte principale. Pawxy registra il file e la riga di origine di ogni mapping; i nuovi domini Pawxy usano un file .conf descrittivo per mapping. I file esterni esistenti mantengono la loro struttura originale."
+          }
+        }
+      }
+    },
+    "dnsmasq operation failed": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Operazione dnsmasq non riuscita"
+          }
+        }
+      }
+    },
+    "dnsmasq resolves %@ to %@, but macOS is not routing the domain to dnsmasq. Use Repair system resolver, then test again.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "dnsmasq resolves %1$@ to %2$@, but macOS is not routing the domain to dnsmasq. Use Repair system resolver, then test again."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "dnsmasq risolve %1$@ in %2$@, ma macOS non instrada il dominio verso dnsmasq. Usa Ripara resolver di sistema, quindi ripeti il test."
+          }
+        }
+      }
+    },
+    "dnsmasq returned no IPv4 address for %@. Click to test again.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "dnsmasq non ha restituito un indirizzo IPv4 per %1$@. Fai clic per ripetere il test."
+          }
+        }
+      }
+    },
+    "Domain": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dominio"
+          }
+        }
+      }
+    },
+    "Domain and subdomains": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dominio e sottodomini"
+          }
+        }
+      }
+    },
+    "Domains": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domini"
+          }
+        }
+      }
+    },
+    "Each enabled Pawxy domain also gets a managed file in /etc/resolver so macOS sends that domain to dnsmasq. For pre-existing mappings, use Repair system resolver from the domain menu. Avoid .local for new domains because macOS reserves it for Bonjour.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ogni dominio Pawxy abilitato riceve anche un file gestito in /etc/resolver, così macOS invia quel dominio a dnsmasq. Per i mapping esistenti usa Ripara resolver di sistema dal menu del dominio. Evita .local per i nuovi domini perché macOS lo riserva a Bonjour."
+          }
+        }
+      }
+    },
+    "Each new mapping gets its own dnsmasq .conf file.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ogni nuovo mapping ottiene il proprio file .conf dnsmasq."
+          }
+        }
+      }
+    },
+    "Edit local domain": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modifica dominio locale"
+          }
+        }
+      }
+    },
+    "Edit…": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modifica…"
+          }
+        }
+      }
+    },
+    "Empty backup": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backup vuoto"
+          }
+        }
+      }
+    },
+    "Enable this domain": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abilita questo dominio"
+          }
+        }
+      }
+    },
+    "Enabled": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abilitato"
+          }
+        }
+      }
+    },
+    "Enter a domain name.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inserisci un nome di dominio."
+          }
+        }
+      }
+    },
+    "Enter a valid domain, for example my-project.test.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inserisci un dominio valido, per esempio my-project.test."
+          }
+        }
+      }
+    },
+    "Enter a valid IPv4 address.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inserisci un indirizzo IPv4 valido."
+          }
+        }
+      }
+    },
+    "Environment": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ambiente"
+          }
+        }
+      }
+    },
+    "Environment needs attention": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'ambiente richiede attenzione"
+          }
+        }
+      }
+    },
+    "Environment ready": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ambiente pronto"
+          }
+        }
+      }
+    },
+    "Exact domain": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo dominio"
+          }
+        }
+      }
+    },
+    "Exact record": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Record esatto"
+          }
+        }
+      }
+    },
+    "Existing configuration": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configurazione esistente"
+          }
+        }
+      }
+    },
+    "Existing dnsmasq files": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "File dnsmasq esistenti"
+          }
+        }
+      }
+    },
+    "Export": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esporta"
+          }
+        }
+      }
+    },
+    "Export Backup saves domains, addresses, wildcard options and enabled states in a versioned JSON file. Import Backup previews its contents, skips domains already present and creates one dnsmasq .conf file for each new mapping.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esporta backup salva domini, indirizzi, opzioni wildcard e stati di attivazione in un file JSON versionato. Importa backup permette di controllarne il contenuto, ignora i domini già presenti e crea un file .conf dnsmasq per ogni nuovo mapping."
+          }
+        }
+      }
+    },
+    "Export Backup…": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esporta backup…"
+          }
+        }
+      }
+    },
+    "Export Pawxy Backup": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esporta backup Pawxy"
+          }
+        }
+      }
+    },
+    "Exported %lld mappings to %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Exported %1$lld mappings to %2$@."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esportati %1$lld mapping in %2$@."
+          }
+        }
+      }
+    },
+    "Exported one mapping to %@.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esportato un mapping in %1$@."
+          }
+        }
+      }
+    },
+    "Failed": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Errore"
+          }
+        }
+      }
+    },
+    "General": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Generali"
+          }
+        }
+      }
+    },
+    "Getting started": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Per iniziare"
+          }
+        }
+      }
+    },
+    "Helper missing from app": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Helper mancante nell'app"
+          }
+        }
+      }
+    },
+    "Helper not installed": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Helper non installato"
+          }
+        }
+      }
+    },
+    "Helper setup failed": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configurazione helper non riuscita"
+          }
+        }
+      }
+    },
+    "Helper unavailable": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Helper non disponibile"
+          }
+        }
+      }
+    },
+    "Homebrew": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Homebrew"
+          }
+        }
+      }
+    },
+    "Homebrew + dnsmasq": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Homebrew + dnsmasq"
+          }
+        }
+      }
+    },
+    "Homebrew and dnsmasq are available on this Mac.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Homebrew e dnsmasq sono disponibili su questo Mac."
+          }
+        }
+      }
+    },
+    "Homebrew was not found in the standard installation paths.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Homebrew non è stato trovato nei percorsi di installazione standard."
+          }
+        }
+      }
+    },
+    "Import %lld": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importa %1$lld"
+          }
+        }
+      }
+    },
+    "Import Backup…": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importa backup…"
+          }
+        }
+      }
+    },
+    "Import Pawxy backup": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importa backup Pawxy"
+          }
+        }
+      }
+    },
+    "Import Pawxy Backup": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importa backup Pawxy"
+          }
+        }
+      }
+    },
+    "Imported %lld mappings and restarted dnsmasq.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importati %1$lld mapping e riavviato dnsmasq."
+          }
+        }
+      }
+    },
+    "Imported one mapping and restarted dnsmasq.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importato un mapping e riavviato dnsmasq."
+          }
+        }
+      }
+    },
+    "Importing…": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importazione…"
+          }
+        }
+      }
+    },
+    "Install dnsmasq, then check again:": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installa dnsmasq, quindi verifica di nuovo:"
+          }
+        }
+      }
+    },
+    "Install helper": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installa helper"
+          }
+        }
+      }
+    },
+    "Install the Pawxy system service before changing DNS configuration.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installa il servizio di sistema di Pawxy prima di modificare la configurazione DNS."
+          }
+        }
+      }
+    },
+    "IPv4 address": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Indirizzo IPv4"
+          }
+        }
+      }
+    },
+    "Legacy pawxy.conf detected": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rilevato pawxy.conf precedente"
+          }
+        }
+      }
+    },
+    "Let’s get Pawxy ready": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prepariamo Pawxy"
+          }
+        }
+      }
+    },
+    "Local DNS": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DNS locale"
+          }
+        }
+      }
+    },
+    "Local DNS management for macOS developers": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gestione DNS locale per sviluppatori macOS"
+          }
+        }
+      }
+    },
+    "Local DNS resolver used by Pawxy": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resolver DNS locale usato da Pawxy"
+          }
+        }
+      }
+    },
+    "Local Domains": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domini locali"
+          }
+        }
+      }
+    },
+    "Local tools": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Strumenti locali"
+          }
+        }
+      }
+    },
+    "Looking for Homebrew and dnsmasq": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ricerca di Homebrew e dnsmasq"
+          }
+        }
+      }
+    },
+    "macOS may require one approval in Login Items & Extensions. Pawxy never gives the helper arbitrary shell commands.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS potrebbe richiedere un'unica approvazione in Elementi login ed estensioni. Pawxy non invia mai comandi shell arbitrari all'helper."
+          }
+        }
+      }
+    },
+    "macOS reserves .local for Bonjour. Use a suffix such as .pawxy or .test.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS riserva .local a Bonjour. Usa un suffisso come .pawxy o .test."
+          }
+        }
+      }
+    },
+    "macOS resolvers": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resolver macOS"
+          }
+        }
+      }
+    },
+    "macOS returned an unknown helper status.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS ha restituito uno stato dell'helper sconosciuto."
+          }
+        }
+      }
+    },
+    "Managed domains": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domini gestiti"
+          }
+        }
+      }
+    },
+    "Mapping": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mapping"
+          }
+        }
+      }
+    },
+    "Mismatch": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non corrisponde"
+          }
+        }
+      }
+    },
+    "Monitor and manage your local DNS workspace.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controlla e gestisci il tuo ambiente DNS locale."
+          }
+        }
+      }
+    },
+    "Moved %lld mappings into separate dnsmasq configuration files.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spostati %1$lld mapping in file di configurazione dnsmasq separati."
+          }
+        }
+      }
+    },
+    "Moved one mapping into a separate dnsmasq configuration file.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spostato un mapping in un file di configurazione dnsmasq separato."
+          }
+        }
+      }
+    },
+    "my-project.test": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "my-project.test"
+          }
+        }
+      }
+    },
+    "New Domain": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nuovo dominio"
+          }
+        }
+      }
+    },
+    "New domains": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nuovi domini"
+          }
+        }
+      }
+    },
+    "No answer": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessuna risposta"
+          }
+        }
+      }
+    },
+    "No configuration files in use.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessun file di configurazione in uso."
+          }
+        }
+      }
+    },
+    "No domains yet": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ancora nessun dominio"
+          }
+        }
+      }
+    },
+    "No legacy Pawxy mappings needed migration.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessun mapping Pawxy precedente richiede la migrazione."
+          }
+        }
+      }
+    },
+    "No local domains": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessun dominio locale"
+          }
+        }
+      }
+    },
+    "No results": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessun risultato"
+          }
+        }
+      }
+    },
+    "No supported mappings were found in dnsmasq.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessun mapping supportato trovato in dnsmasq."
+          }
+        }
+      }
+    },
+    "Not found": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non trovato"
+          }
+        }
+      }
+    },
+    "Off": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disattivato"
+          }
+        }
+      }
+    },
+    "OK": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        }
+      }
+    },
+    "On": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Attivo"
+          }
+        }
+      }
+    },
+    "One or more required tools could not be found.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uno o più strumenti richiesti non sono stati trovati."
+          }
+        }
+      }
+    },
+    "Open brew.sh": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apri brew.sh"
+          }
+        }
+      }
+    },
+    "Open Local Domains to see mappings detected from dnsmasq automatically, or create a new domain with ⌘N. Use ⌘R after changing configuration files outside Pawxy.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apri Domini locali per vedere i mapping rilevati automaticamente da dnsmasq oppure crea un nuovo dominio con ⌘N. Usa ⌘R dopo aver modificato i file di configurazione fuori da Pawxy."
+          }
+        }
+      }
+    },
+    "Open Login Items & Extensions": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apri Elementi login ed estensioni"
+          }
+        }
+      }
+    },
+    "Open System Settings": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apri Impostazioni di Sistema"
+          }
+        }
+      }
+    },
+    "Overview": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Panoramica"
+          }
+        }
+      }
+    },
+    "Package manager used to locate dnsmasq": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gestore di pacchetti usato per individuare dnsmasq"
+          }
+        }
+      }
+    },
+    "Pawxy": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pawxy"
+          }
+        }
+      }
+    },
+    "Pawxy Backup %@.pawxy.json": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backup Pawxy %1$@.pawxy.json"
+          }
+        }
+      }
+    },
+    "Pawxy cannot create %@ because that file already exists and is not managed by Pawxy.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pawxy non può creare %1$@ perché il file esiste già e non è gestito da Pawxy."
+          }
+        }
+      }
+    },
+    "Pawxy cannot use %@ because it already exists and does not route to local dnsmasq. The file was left unchanged.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pawxy non può usare %1$@ perché esiste già e non instrada verso dnsmasq locale. Il file non è stato modificato."
+          }
+        }
+      }
+    },
+    "Pawxy could not create a secure connection to its privileged helper.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pawxy non è riuscito a creare una connessione sicura con il suo helper privilegiato."
+          }
+        }
+      }
+    },
+    "Pawxy did not split %@ because it contains custom content. The file was left unchanged.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pawxy non ha diviso %1$@ perché contiene dati personalizzati. Il file non è stato modificato."
+          }
+        }
+      }
+    },
+    "Pawxy domains cover the domain and its subdomains using a dnsmasq address directive.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I domini Pawxy coprono il dominio e i suoi sottodomini tramite una direttiva address di dnsmasq."
+          }
+        }
+      }
+    },
+    "Pawxy Help": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aiuto Pawxy"
+          }
+        }
+      }
+    },
+    "Pawxy is checking its secure system service.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pawxy sta verificando il suo servizio di sistema sicuro."
+          }
+        }
+      }
+    },
+    "Pawxy needs these local development tools before it can manage DNS.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pawxy richiede questi strumenti di sviluppo locale prima di poter gestire il DNS."
+          }
+        }
+      }
+    },
+    "Pawxy reads mappings from dnsmasq and manages a macOS resolver for each enabled Pawxy domain.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pawxy legge i mapping da dnsmasq e gestisce un resolver macOS per ogni dominio Pawxy abilitato."
+          }
+        }
+      }
+    },
+    "Pawxy store": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Archivio Pawxy"
+          }
+        }
+      }
+    },
+    "Pawxy synchronizes mappings directly from dnsmasq. Its signed privileged helper validates paths, backs up changes, tests the complete configuration and restarts the service without AppleScript.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pawxy sincronizza i mapping direttamente da dnsmasq. Il suo helper privilegiato firmato convalida i percorsi, crea backup delle modifiche, verifica l'intera configurazione e riavvia il servizio senza AppleScript."
+          }
+        }
+      }
+    },
+    "Pawxy uses a signed system service to update dnsmasq and macOS resolvers without AppleScript prompts.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pawxy usa un servizio di sistema firmato per aggiornare dnsmasq e i resolver di macOS senza richieste AppleScript."
+          }
+        }
+      }
+    },
+    "Pawxy uses a signed, app-bundled XPC service for protected dnsmasq and resolver changes. macOS asks you to approve it once in Login Items & Extensions; Pawxy never sends arbitrary shell commands to the service.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pawxy usa un servizio XPC firmato incluso nell'app per le modifiche protette a dnsmasq e ai resolver. macOS chiede di approvarlo una volta in Elementi login ed estensioni; Pawxy non invia mai comandi shell arbitrari al servizio."
+          }
+        }
+      }
+    },
+    "Pawxy validates the mapping, updates the dnsmasq configuration and macOS resolver, then restarts the service.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pawxy convalida il mapping, aggiorna la configurazione dnsmasq e il resolver di macOS, quindi riavvia il servizio."
+          }
+        }
+      }
+    },
+    "Portable backups": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backup portabili"
+          }
+        }
+      }
+    },
+    "Privileged helper": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Helper privilegiato"
+          }
+        }
+      }
+    },
+    "Privileged helper ready": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Helper privilegiato pronto"
+          }
+        }
+      }
+    },
+    "Ready": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto"
+          }
+        }
+      }
+    },
+    "Refresh": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiorna"
+          }
+        }
+      }
+    },
+    "Refresh dnsmasq mappings or create your first domain.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiorna i mapping dnsmasq o crea il tuo primo dominio."
+          }
+        }
+      }
+    },
+    "Refresh mappings": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiorna mapping"
+          }
+        }
+      }
+    },
+    "Refresh Mappings": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiorna mapping"
+          }
+        }
+      }
+    },
+    "Reinstall helper": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reinstalla helper"
+          }
+        }
+      }
+    },
+    "Repair system resolver…": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ripara resolver di sistema…"
+          }
+        }
+      }
+    },
+    "Resolver missing": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resolver mancante"
+          }
+        }
+      }
+    },
+    "Restart dnsmasq": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Riavvia dnsmasq"
+          }
+        }
+      }
+    },
+    "Restart dnsmasq first validates the complete configuration, then restarts the system service. It does not rewrite configuration files.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Riavvia dnsmasq prima convalida l'intera configurazione, quindi riavvia il servizio di sistema. Non riscrive i file di configurazione."
+          }
+        }
+      }
+    },
+    "Restart dnsmasq…": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Riavvia dnsmasq…"
+          }
+        }
+      }
+    },
+    "Restarting dnsmasq": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Riavvio di dnsmasq"
+          }
+        }
+      }
+    },
+    "Review Backup": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controlla backup"
+          }
+        }
+      }
+    },
+    "Save a portable copy of your current domain mappings.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salva una copia portabile dei mapping di dominio correnti."
+          }
+        }
+      }
+    },
+    "Save changes": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salva modifiche"
+          }
+        }
+      }
+    },
+    "Search domains or addresses": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cerca domini o indirizzi"
+          }
+        }
+      }
+    },
+    "Secure system access": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accesso sicuro al sistema"
+          }
+        }
+      }
+    },
+    "Setup required": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configurazione richiesta"
+          }
+        }
+      }
+    },
+    "Show %@ in Finder": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra %1$@ nel Finder"
+          }
+        }
+      }
+    },
+    "Show environment summary at launch": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra il riepilogo dell'ambiente all'avvio"
+          }
+        }
+      }
+    },
+    "Show in Finder": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra nel Finder"
+          }
+        }
+      }
+    },
+    "Show setup on next launch": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra configurazione al prossimo avvio"
+          }
+        }
+      }
+    },
+    "Software updates": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiornamenti software"
+          }
+        }
+      }
+    },
+    "Split Pawxy file": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dividi file Pawxy"
+          }
+        }
+      }
+    },
+    "Startup": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avvio"
+          }
+        }
+      }
+    },
+    "System service": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Servizio di sistema"
+          }
+        }
+      }
+    },
+    "Test": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Test"
+          }
+        }
+      }
+    },
+    "The backup contains an invalid mapping for %@.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il backup contiene un mapping non valido per %1$@."
+          }
+        }
+      }
+    },
+    "The backup contains more than one mapping for %@.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il backup contiene più di un mapping per %1$@."
+          }
+        }
+      }
+    },
+    "The configuration file no longer exists at %@. Refresh the mappings and try again.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il file di configurazione non esiste più in %1$@. Aggiorna i mapping e riprova."
+          }
+        }
+      }
+    },
+    "The configuration is valid and dnsmasq was restarted successfully.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La configurazione è valida e dnsmasq è stato riavviato correttamente."
+          }
+        }
+      }
+    },
+    "The dnsmasq directive for %@ could not be found. Refresh the mappings and try again.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La direttiva dnsmasq per %1$@ non è stata trovata. Aggiorna i mapping e riprova."
+          }
+        }
+      }
+    },
+    "The Environment screen shows where Homebrew and dnsmasq were found. Use Check again after installing or updating either tool.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La schermata Ambiente mostra dove sono stati trovati Homebrew e dnsmasq. Usa Verifica di nuovo dopo aver installato o aggiornato uno dei due strumenti."
+          }
+        }
+      }
+    },
+    "The helper is registered but did not answer. Reinstall or restart Pawxy.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'helper è registrato ma non risponde. Reinstallalo oppure riavvia Pawxy."
+          }
+        }
+      }
+    },
+    "The Pawxy privileged helper did not respond in time.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'helper privilegiato di Pawxy non ha risposto in tempo."
+          }
+        }
+      }
+    },
+    "The Pawxy privileged helper is unavailable: %@": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'helper privilegiato di Pawxy non è disponibile: %1$@"
+          }
+        }
+      }
+    },
+    "The Pawxy privileged helper returned an invalid response.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'helper privilegiato di Pawxy ha restituito una risposta non valida."
+          }
+        }
+      }
+    },
+    "The privileged helper operation failed: %@": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Operazione dell'helper privilegiato non riuscita: %1$@"
+          }
+        }
+      }
+    },
+    "This action cannot be undone.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questa azione non può essere annullata."
+          }
+        }
+      }
+    },
+    "This backup does not contain any domain mappings.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questo backup non contiene mapping di domini."
+          }
+        }
+      }
+    },
+    "This backup uses unsupported format version %lld.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questo backup usa la versione di formato non supportata %1$lld."
+          }
+        }
+      }
+    },
+    "This build does not contain the Pawxy privileged helper.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questa build non contiene l'helper privilegiato di Pawxy."
+          }
+        }
+      }
+    },
+    "This domain already exists.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questo dominio esiste già."
+          }
+        }
+      }
+    },
+    "This is not a valid Pawxy backup: %@": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questo non è un backup Pawxy valido: %1$@"
+          }
+        }
+      }
+    },
+    "This mapping is disabled. Enable it before testing resolution.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questo mapping è disabilitato. Abilitalo prima di verificare la risoluzione."
+          }
+        }
+      }
+    },
+    "This removes the directive from its dnsmasq configuration file through Pawxy’s privileged helper and restarts the service.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questa operazione rimuove la direttiva dal relativo file di configurazione dnsmasq tramite l'helper privilegiato di Pawxy e riavvia il servizio."
+          }
+        }
+      }
+    },
+    "This setup check is read-only. DNS changes are performed by Pawxy’s signed privileged helper.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questa verifica di configurazione è in sola lettura. Le modifiche DNS vengono eseguite dall'helper privilegiato firmato di Pawxy."
+          }
+        }
+      }
+    },
+    "Tools and configuration detected on this Mac.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Strumenti e configurazione rilevati su questo Mac."
+          }
+        }
+      }
+    },
+    "Try a different domain or address.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prova un dominio o un indirizzo diverso."
+          }
+        }
+      }
+    },
+    "Updates": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiornamenti"
+          }
+        }
+      }
+    },
+    "Updates are downloaded from GitHub Releases and cryptographically verified by Sparkle before installation.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gli aggiornamenti vengono scaricati da GitHub Releases e verificati crittograficamente da Sparkle prima dell'installazione."
+          }
+        }
+      }
+    },
+    "Verify this mapping through dnsmasq and the macOS system resolver.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verifica questo mapping tramite dnsmasq e il resolver di sistema di macOS."
+          }
+        }
+      }
+    },
+    "Version %@ (%@)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Version %1$@ (%2$@)"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Versione %1$@ (%2$@)"
+          }
+        }
+      }
+    },
+    "View all": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra tutti"
+          }
+        }
+      }
+    },
+    "View environment": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra ambiente"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}
