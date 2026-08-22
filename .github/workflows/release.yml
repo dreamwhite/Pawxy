@@ -1,0 +1,113 @@
+name: Release Pawxy
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-26
+    env:
+      DERIVED_DATA: ${{ runner.temp }}/PawxyDerivedData
+      PACKAGE_CACHE: ${{ runner.temp }}/PawxyPackages
+      DISTRIBUTION_DIR: ${{ runner.temp }}/PawxyDistribution
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read version from tag
+        id: version
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Tag must look like v1.2.3 or v1.2.3-beta.1" >&2
+            exit 1
+          fi
+          echo "value=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve Swift packages
+        run: |
+          xcodebuild -resolvePackageDependencies \
+            -project Pawxy.xcodeproj \
+            -scheme Pawxy \
+            -clonedSourcePackagesDirPath "$PACKAGE_CACHE"
+
+      - name: Build ad-hoc signed release
+        run: |
+          xcodebuild \
+            -project Pawxy.xcodeproj \
+            -scheme Pawxy \
+            -configuration Release \
+            -destination "generic/platform=macOS" \
+            -derivedDataPath "$DERIVED_DATA" \
+            -clonedSourcePackagesDirPath "$PACKAGE_CACHE" \
+            PAWXY_GITHUB_REPOSITORY="$GITHUB_REPOSITORY" \
+            MARKETING_VERSION="${{ steps.version.outputs.value }}" \
+            CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="-" \
+            DEVELOPMENT_TEAM="" \
+            build
+
+      - name: Verify and archive application
+        shell: bash
+        run: |
+          app="$DERIVED_DATA/Build/Products/Release/Pawxy.app"
+          version="${{ steps.version.outputs.value }}"
+          archive="$DISTRIBUTION_DIR/Pawxy-$version.zip"
+          notes="$DISTRIBUTION_DIR/Pawxy-$version.md"
+
+          test -d "$app"
+          codesign --verify --deep --strict --verbose=2 "$app"
+          mkdir -p "$DISTRIBUTION_DIR"
+          ditto -c -k --sequesterRsrc --keepParent "$app" "$archive"
+
+          git tag -l --format='%(contents)' "$GITHUB_REF_NAME" > "$notes"
+          if [[ ! -s "$notes" ]]; then
+            printf 'Pawxy %s\n' "$version" > "$notes"
+          fi
+
+      - name: Generate signed Sparkle appcast
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        shell: bash
+        run: |
+          if [[ -z "$SPARKLE_PRIVATE_KEY" ]]; then
+            echo "The SPARKLE_PRIVATE_KEY repository secret is missing." >&2
+            exit 1
+          fi
+
+          generate_appcast="$PACKAGE_CACHE/artifacts/sparkle/Sparkle/bin/generate_appcast"
+          test -x "$generate_appcast"
+          printf '%s' "$SPARKLE_PRIVATE_KEY" | "$generate_appcast" \
+            --ed-key-file - \
+            --embed-release-notes \
+            --maximum-deltas 0 \
+            --download-url-prefix "https://github.com/$GITHUB_REPOSITORY/releases/download/$GITHUB_REF_NAME/" \
+            --link "https://github.com/$GITHUB_REPOSITORY" \
+            "$DISTRIBUTION_DIR"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          version="${{ steps.version.outputs.value }}"
+          archive="$DISTRIBUTION_DIR/Pawxy-$version.zip"
+          shasum -a 256 "$archive" > "$DISTRIBUTION_DIR/SHA256SUMS.txt"
+
+          gh release create "$GITHUB_REF_NAME" \
+            "$archive" \
+            "$DISTRIBUTION_DIR/appcast.xml" \
+            "$DISTRIBUTION_DIR/SHA256SUMS.txt" \
+            --title "Pawxy $version" \
+            --generate-notes \
+            --latest
