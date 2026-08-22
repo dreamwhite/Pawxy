@@ -104,7 +104,10 @@ struct ContentView: View {
                 onRefresh: refreshMappings,
                 onRestart: restartDnsmasq,
                 onRevealFile: revealFile,
-                onShowEnvironment: { destination = .environment }
+                onShowEnvironment: { destination = .environment },
+                onCheckEnvironment: {
+                    environmentStatus = DependencyChecker().check()
+                }
             )
 
         case .domains:
