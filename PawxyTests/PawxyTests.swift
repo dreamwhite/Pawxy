@@ -273,7 +273,10 @@ struct PawxyTests {
         )
 
         #expect(path.hasSuffix("/api-example-test.conf"))
-        #expect(manager.resolverFilePath(for: "API.Example.TEST") == "/etc/resolver/api.example.test")
+        #expect(
+            manager.resolverFilePath(for: "API.Example.TEST")
+                == "/private/etc/resolver/api.example.test"
+        )
     }
 
     @Test func privilegedHelperRequestRoundTripsThroughJSON() throws {
@@ -285,7 +288,7 @@ struct PawxyTests {
                         destination: "/opt/homebrew/etc/dnsmasq.d/example-test.conf",
                         contents: Data("address=/example.test/127.0.0.1\n".utf8)
                     ),
-                    .remove(destination: "/etc/resolver/old.example.test")
+                    .remove(destination: "/private/etc/resolver/old.example.test")
                 ],
                 restartDnsmasq: true
             )
@@ -302,10 +305,11 @@ struct PawxyTests {
 
         #expect(policy.allows("/opt/homebrew/etc/dnsmasq.conf"))
         #expect(policy.allows("/opt/homebrew/etc/dnsmasq.d/example-test.conf"))
-        #expect(policy.allows("/etc/resolver/example.test"))
+        #expect(policy.allows("/private/etc/resolver/example.test"))
+        #expect(!policy.allows("/etc/resolver/example.test"))
         #expect(!policy.allows("/opt/homebrew/etc/unrelated.conf"))
         #expect(!policy.allows("/opt/homebrew/etc/dnsmasq.d/nested/example.conf"))
-        #expect(!policy.allows("/etc/resolver/../sudoers"))
+        #expect(!policy.allows("/private/etc/resolver/../sudoers"))
         #expect(PawxyPrivilegedPathPolicy(prefix: "/tmp/homebrew") == nil)
     }
 

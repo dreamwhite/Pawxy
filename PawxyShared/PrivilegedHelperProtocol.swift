@@ -80,12 +80,12 @@ nonisolated struct PawxyPrivilegedPathPolicy: Sendable {
 
     var rootConfiguration: String { "\(prefix)/etc/dnsmasq.conf" }
     var configurationDirectory: String { "\(prefix)/etc/dnsmasq.d" }
-    var resolverDirectory: String { "/etc/resolver" }
+    // `/etc` is a system symlink to `/private/etc` on macOS. Use the canonical
+    // path so the helper can keep rejecting every symlink in privileged file
+    // transactions without blocking the legitimate resolver directory.
+    var resolverDirectory: String { "/private/etc/resolver" }
 
     func allows(_ path: String) -> Bool {
-        let standardized = URL(fileURLWithPath: path).standardizedFileURL.path
-        guard standardized == path else { return false }
-
         if path == rootConfiguration {
             return true
         }

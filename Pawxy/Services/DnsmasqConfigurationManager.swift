@@ -574,7 +574,7 @@ extension DnsmasqConfigurationManager {
         let prefix: String
 
         var configurationDirectory: String { "\(prefix)/etc/dnsmasq.d" }
-        var resolverDirectory: String { "/etc/resolver" }
+        var resolverDirectory: String { "/private/etc/resolver" }
         var legacyManagedConfiguration: String { "\(configurationDirectory)/pawxy.conf" }
         var rootConfiguration: String { "\(prefix)/etc/dnsmasq.conf" }
         var dnsmasqExecutable: String { "\(prefix)/opt/dnsmasq/sbin/dnsmasq" }

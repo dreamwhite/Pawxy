@@ -193,9 +193,11 @@ private struct PawxyPrivilegedOperationExecutor {
         _ change: PawxyPrivilegedFileChange,
         paths: ValidatedPaths
     ) throws {
-        let destination = URL(fileURLWithPath: change.destination).standardizedFileURL.path
-        guard destination == change.destination,
-              paths.allows(destination),
+        // Validate the original spelling against the strict allowlist. URL
+        // standardization rewrites `/private/etc` back to `/etc` on macOS,
+        // which would reintroduce the system symlink we deliberately avoid.
+        let destination = change.destination
+        guard paths.allows(destination),
               !containsSymbolicLink(destination)
         else {
             throw HelperError.forbiddenPath(change.destination)
