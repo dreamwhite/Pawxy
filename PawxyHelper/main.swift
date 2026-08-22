@@ -4,6 +4,8 @@
 //
 
 import Foundation
+import Darwin
+import OSLog
 import Security
 
 private final class PawxyHelperDelegate: NSObject, NSXPCListenerDelegate {
@@ -25,30 +27,49 @@ private final class PawxyHelperDelegate: NSObject, NSXPCListenerDelegate {
 }
 
 private enum PawxyClientCodeValidator {
+    private static let logger = Logger(
+        subsystem: PawxyPrivilegedHelperConstants.machServiceName,
+        category: "ClientValidation"
+    )
+
     static func isTrusted(connection: NSXPCConnection) -> Bool {
         var guestCode: SecCode?
         let attributes = [kSecGuestAttributePid: connection.processIdentifier] as CFDictionary
-        guard SecCodeCopyGuestWithAttributes(nil, attributes, [], &guestCode) == errSecSuccess,
-              let guestCode,
-              let requirement = bundledAppRequirement(),
-              SecCodeCheckValidity(guestCode, [], requirement) == errSecSuccess
-        else {
+        let guestStatus = SecCodeCopyGuestWithAttributes(nil, attributes, [], &guestCode)
+        guard guestStatus == errSecSuccess, let guestCode else {
+            logger.error(
+                "Could not inspect XPC client pid \(connection.processIdentifier): \(guestStatus)"
+            )
             return false
         }
+
+        guard let requirement = bundledAppRequirement() else {
+            logger.error("Could not derive the containing Pawxy app requirement")
+            return false
+        }
+
+        let validityStatus = SecCodeCheckValidity(guestCode, [], requirement)
+        guard validityStatus == errSecSuccess else {
+            logger.error(
+                "Rejected XPC client pid \(connection.processIdentifier): \(validityStatus)"
+            )
+            return false
+        }
+
         return true
     }
 
     private static func bundledAppRequirement() -> SecRequirement? {
-        let contentsURL = URL(fileURLWithPath: CommandLine.arguments[0])
-            .standardizedFileURL
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-        let appExecutableURL = contentsURL
-            .appendingPathComponent("MacOS", isDirectory: true)
-            .appendingPathComponent("Pawxy")
+        guard let helperExecutableURL = currentExecutableURL(),
+              let appURL = PawxyPrivilegedHelperBundleLayout.containingAppURL(
+                  forHelperExecutable: helperExecutableURL
+              )
+        else {
+            return nil
+        }
 
         var appCode: SecStaticCode?
-        guard SecStaticCodeCreateWithPath(appExecutableURL as CFURL, [], &appCode)
+        guard SecStaticCodeCreateWithPath(appURL as CFURL, [], &appCode)
                 == errSecSuccess,
               let appCode
         else {
@@ -60,6 +81,21 @@ private enum PawxyClientCodeValidator {
             return nil
         }
         return requirement
+    }
+
+    private static func currentExecutableURL() -> URL? {
+        // PROC_PIDPATHINFO_MAXSIZE expands to 4 * MAXPATHLEN, but that C macro
+        // is not imported into Swift because of its unsupported structure.
+        let processPathBufferSize = 4_096
+        var pathBuffer = [UInt8](
+            repeating: 0,
+            count: processPathBufferSize
+        )
+        let length = pathBuffer.withUnsafeMutableBytes { buffer in
+            proc_pidpath(getpid(), buffer.baseAddress, UInt32(buffer.count))
+        }
+        guard length > 0 else { return nil }
+        return URL(fileURLWithPath: String(cString: pathBuffer))
     }
 }
 

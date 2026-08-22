@@ -309,6 +309,32 @@ struct PawxyTests {
         #expect(PawxyPrivilegedPathPolicy(prefix: "/tmp/homebrew") == nil)
     }
 
+    @Test func privilegedHelperFindsItsContainingAppFromAnAbsoluteProcessPath() {
+        let helperURL = URL(
+            fileURLWithPath: "/Applications/Pawxy.app/Contents/Resources/PawxyHelper"
+        )
+
+        #expect(
+            PawxyPrivilegedHelperBundleLayout.containingAppURL(
+                forHelperExecutable: helperURL
+            )?.path == "/Applications/Pawxy.app"
+        )
+        #expect(
+            PawxyPrivilegedHelperBundleLayout.containingAppURL(
+                forHelperExecutable: URL(
+                    fileURLWithPath: "/Applications/Pawxy.app/Contents/MacOS/PawxyHelper"
+                )
+            ) == nil
+        )
+        #expect(
+            PawxyPrivilegedHelperBundleLayout.containingAppURL(
+                forHelperExecutable: URL(
+                    fileURLWithPath: "/Applications/Pawxy.app/Contents/Resources/OtherHelper"
+                )
+            ) == nil
+        )
+    }
+
     @Test func macOSResolverDocumentRoutesDomainsToLocalDnsmasq() {
         let contents = MacOSResolverDocument.managedFile(for: "indirizzo.pawxy")
 

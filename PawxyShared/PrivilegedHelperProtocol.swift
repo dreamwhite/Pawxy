@@ -12,6 +12,23 @@ nonisolated enum PawxyPrivilegedHelperConstants {
     static let protocolVersion = 1
 }
 
+nonisolated enum PawxyPrivilegedHelperBundleLayout {
+    static func containingAppURL(forHelperExecutable executableURL: URL) -> URL? {
+        let helperURL = executableURL.standardizedFileURL
+        guard helperURL.lastPathComponent == "PawxyHelper" else { return nil }
+
+        let resourcesURL = helperURL.deletingLastPathComponent()
+        guard resourcesURL.lastPathComponent == "Resources" else { return nil }
+
+        let contentsURL = resourcesURL.deletingLastPathComponent()
+        guard contentsURL.lastPathComponent == "Contents" else { return nil }
+
+        let appURL = contentsURL.deletingLastPathComponent()
+        guard appURL.pathExtension == "app" else { return nil }
+        return appURL
+    }
+}
+
 @objc(PawxyPrivilegedHelperXPC)
 nonisolated protocol PawxyPrivilegedHelperXPC {
     func ping(withReply reply: @escaping (Int) -> Void)

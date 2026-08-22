@@ -144,45 +144,75 @@ final class PrivilegedHelperController: ObservableObject {
     private init() {}
 
     func prepareIfNeeded() {
-        if service.status == .notRegistered {
-            install()
-        } else {
-            refresh()
-        }
+        refresh()
     }
 
     func install() {
         guard !isWorking else { return }
+        if let bundleProblem = embeddedServiceProblem() {
+            state = .missingFromBundle(bundleProblem)
+            return
+        }
+
+        registerEmbeddedService()
+    }
+
+    private func registerEmbeddedService() {
         isWorking = true
+        defer { isWorking = false }
+
         do {
-            if service.status == .notRegistered {
+            switch service.status {
+            case .enabled:
+                refresh()
+                return
+            case .requiresApproval:
+                state = .requiresApproval
+                return
+            case .notRegistered, .notFound:
+                try service.register()
+            @unknown default:
                 try service.register()
             }
             refresh()
         } catch {
-            state = .failed(error.localizedDescription)
+            updateState(afterRegistrationError: error)
         }
-        isWorking = false
     }
 
     /// Re-registers the embedded daemon after an application update. macOS
     /// keeps the previously registered helper until the service is replaced.
     func reinstall() {
         guard !isWorking else { return }
+        if let bundleProblem = embeddedServiceProblem() {
+            state = .missingFromBundle(bundleProblem)
+            return
+        }
+
+        reinstallEmbeddedService()
+    }
+
+    private func reinstallEmbeddedService() {
         isWorking = true
+        defer { isWorking = false }
+
         do {
-            if service.status != .notRegistered {
+            if service.status == .enabled || service.status == .requiresApproval {
                 try service.unregister()
             }
             try service.register()
             refresh()
         } catch {
-            state = .failed(error.localizedDescription)
+            updateState(afterRegistrationError: error)
         }
-        isWorking = false
     }
 
     func refresh() {
+        if let bundleProblem = embeddedServiceProblem() {
+            state = .missingFromBundle(bundleProblem)
+            return
+        }
+
         switch service.status {
         case .enabled:
             state = .checking
@@ -197,7 +227,11 @@ final class PrivilegedHelperController: ObservableObject {
         case .notRegistered:
             state = .notInstalled
         case .notFound:
-            state = .missingFromBundle
+            // `notFound` is also returned when Service Management has not yet
+            // accepted a valid bundled daemon. The bundle itself was checked
+            // above, so keep installation available and let register() expose
+            // the actionable system error.
+            state = .notInstalled
         @unknown default:
             state = .failed(String(localized: "macOS returned an unknown helper status."))
         }
@@ -205,6 +239,43 @@ final class PrivilegedHelperController: ObservableObject {
 
     func openApprovalSettings() {
         SMAppService.openSystemSettingsLoginItems()
+    }
+
+    private func embeddedServiceProblem() -> String? {
+        let helperURL = Bundle.main.bundleURL
+            .appendingPathComponent("Contents/Resources/PawxyHelper", isDirectory: false)
+        guard FileManager.default.isExecutableFile(atPath: helperURL.path) else {
+            return String(localized: "The embedded PawxyHelper executable is missing or is not executable.")
+        }
+
+        let plistURL = Bundle.main.bundleURL
+            .appendingPathComponent("Contents/Library/LaunchDaemons", isDirectory: true)
+            .appendingPathComponent(
+                PawxyPrivilegedHelperConstants.launchDaemonPlistName,
+                isDirectory: false
+            )
+        guard FileManager.default.fileExists(atPath: plistURL.path) else {
+            return String(localized: "The embedded LaunchDaemon property list is missing.")
+        }
+
+        return nil
+    }
+
+    private func updateState(afterRegistrationError error: Error) {
+        switch service.status {
+        case .enabled:
+            refresh()
+        case .requiresApproval:
+            state = .requiresApproval
+        default:
+            let error = error as NSError
+            let code = String(error.code)
+            state = .failed(
+                String(
+                    localized: "Service Management could not register the helper (\(error.domain), code \(code)): \(error.localizedDescription)"
+                )
+            )
+        }
     }
 }
 
@@ -215,7 +286,7 @@ extension PrivilegedHelperController {
         case requiresApproval
         case ready
         case unreachable
-        case missingFromBundle
+        case missingFromBundle(String)
         case failed(String)
 
         var isReady: Bool { self == .ready }
@@ -237,15 +308,15 @@ extension PrivilegedHelperController {
             case .checking:
                 String(localized: "Pawxy is checking its secure system service.")
             case .notInstalled:
-                String(localized: "Install the Pawxy system service before changing DNS configuration.")
+                String(localized: "The Pawxy system service is bundled correctly but has not been registered with macOS.")
             case .requiresApproval:
                 String(localized: "Allow Pawxy in System Settings › General › Login Items & Extensions.")
             case .ready:
                 String(localized: "DNS changes use Pawxy’s signed XPC service without AppleScript prompts.")
             case .unreachable:
                 String(localized: "The helper is registered but did not answer. Reinstall or restart Pawxy.")
-            case .missingFromBundle:
-                String(localized: "This build does not contain the Pawxy privileged helper.")
+            case let .missingFromBundle(message):
+                message
             case let .failed(message):
                 message
             }

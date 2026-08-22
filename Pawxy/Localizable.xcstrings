@@ -1224,6 +1224,7 @@
       }
     },
     "Install the Pawxy system service before changing DNS configuration.": {
+      "extractionState": "stale",
       "localizations": {
         "it": {
           "stringUnit": {
@@ -1993,6 +1994,22 @@
         }
       }
     },
+    "Service Management could not register the helper (%@, code %@): %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Service Management could not register the helper (%1$@, code %2$@): %3$@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Service Management non ha potuto registrare l'helper (%1$@, codice %2$@): %3$@"
+          }
+        }
+      }
+    },
     "Setup required": {
       "localizations": {
         "it": {
@@ -2143,6 +2160,26 @@
         }
       }
     },
+    "The embedded LaunchDaemon property list is missing.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il file delle proprietà del LaunchDaemon incorporato è mancante."
+          }
+        }
+      }
+    },
+    "The embedded PawxyHelper executable is missing or is not executable.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'eseguibile PawxyHelper incorporato è mancante o non è eseguibile."
+          }
+        }
+      }
+    },
     "The Environment screen shows where Homebrew and dnsmasq were found. Use Check again after installing or updating either tool.": {
       "localizations": {
         "it": {
@@ -2193,6 +2230,16 @@
         }
       }
     },
+    "The Pawxy system service is bundled correctly but has not been registered with macOS.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il servizio di sistema di Pawxy è incluso correttamente, ma non è stato registrato con macOS."
+          }
+        }
+      }
+    },
     "The privileged helper operation failed: %@": {
       "localizations": {
         "it": {
@@ -2234,6 +2281,7 @@
       }
     },
     "This build does not contain the Pawxy privileged helper.": {
+      "extractionState": "stale",
       "localizations": {
         "it": {
           "stringUnit": {
