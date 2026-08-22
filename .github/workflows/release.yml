@@ -12,9 +12,9 @@ jobs:
   release:
     runs-on: macos-26
     env:
-      DERIVED_DATA: ${{ runner.temp }}/PawxyDerivedData
-      PACKAGE_CACHE: ${{ runner.temp }}/PawxyPackages
-      DISTRIBUTION_DIR: ${{ runner.temp }}/PawxyDistribution
+      DERIVED_DATA: ${{ github.workspace }}/.build/PawxyDerivedData
+      PACKAGE_CACHE: ${{ github.workspace }}/.build/PawxyPackages
+      DISTRIBUTION_DIR: ${{ github.workspace }}/.build/PawxyDistribution
 
     steps:
       - name: Check out source
