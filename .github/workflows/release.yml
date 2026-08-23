@@ -102,7 +102,10 @@ jobs:
         run: |
           version="${{ steps.version.outputs.value }}"
           archive="$DISTRIBUTION_DIR/Pawxy-$version.zip"
-          shasum -a 256 "$archive" > "$DISTRIBUTION_DIR/SHA256SUMS.txt"
+          (
+            cd "$DISTRIBUTION_DIR"
+            shasum -a 256 "Pawxy-$version.zip" > SHA256SUMS.txt
+          )
 
           gh release create "$GITHUB_REF_NAME" \
             "$archive" \
