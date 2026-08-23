@@ -15,13 +15,15 @@
 
 <p align="center">
   <a href="https://github.com/dreamwhite/Pawxy/releases/latest"><img src="https://img.shields.io/github/v/release/dreamwhite/Pawxy?display_name=tag&sort=semver&style=flat-square" alt="Latest release"></a>
-  <a href="https://github.com/dreamwhite/Pawxy/actions/workflows/release.yml"><img src="https://img.shields.io/github/actions/workflow/status/dreamwhite/Pawxy/release.yml?branch=main&style=flat-square&label=release" alt="Release workflow"></a>
+  <a href="https://github.com/dreamwhite/Pawxy/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/dreamwhite/Pawxy/ci.yml?branch=main&style=flat-square&label=build" alt="Build workflow"></a>
   <img src="https://img.shields.io/badge/macOS-14%2B-111111?style=flat-square&logo=apple" alt="macOS 14 or later">
   <img src="https://img.shields.io/badge/Swift-5-F05138?style=flat-square&logo=swift&logoColor=white" alt="Swift 5">
 </p>
 
 <p align="center">
+  <a href="#screenshots">Screenshots</a> ·
   <a href="#why-pawxy">Why Pawxy?</a> ·
+  <a href="#how-pawxy-compares">Compare</a> ·
   <a href="#features">Features</a> ·
   <a href="#installing-a-release">Install</a> ·
   <a href="#getting-started">Getting started</a>
@@ -41,6 +43,37 @@ a collection of shell commands and configuration files.
 > account. See [Installing a release](#installing-a-release) for the first-run
 > Gatekeeper step.
 
+## Screenshots
+
+<p align="center">
+  <img
+    src="Docs/Screenshots/overview.png"
+    width="820"
+    alt="Pawxy Overview showing DNS health, environment status, and active mappings"
+  >
+</p>
+
+<table>
+  <tr>
+    <td width="50%">
+      <img
+        src="Docs/Screenshots/local-domains.png"
+        alt="Pawxy Local Domains screen"
+      >
+    </td>
+    <td width="50%">
+      <img
+        src="Docs/Screenshots/environment.png"
+        alt="Pawxy Environment screen"
+      >
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Manage local domains</strong></td>
+    <td align="center"><strong>Verify the DNS environment</strong></td>
+  </tr>
+</table>
+
 ## Why Pawxy?
 
 A local hostname normally involves several pieces that are easy to leave out of
@@ -56,6 +89,44 @@ Pawxy stages edits until you are ready, previews the complete transaction, and
 then treats all of those pieces as one operation. The batch is validated,
 backed up, applied through a single standard macOS administrator authorization
 prompt, and followed by one service restart.
+
+## How Pawxy compares
+
+Pawxy is deliberately narrower than a full local-development environment. It
+does not install PHP, run a web server, issue TLS certificates, or manage a
+database. It provides a native control plane for the Homebrew dnsmasq setup
+already on your Mac, regardless of the language or framework behind a project.
+
+| Capability | **Pawxy** | [Kettle Code](https://kettlecode.org/) | [Laravel Herd](https://herd.laravel.com/docs/macos/getting-started/installation) | [Laravel Valet](https://laravel.com/docs/valet) | [dnsmasq](https://thekelleys.org.uk/dnsmasq/doc.html) + Homebrew |
+| --- | --- | --- | --- | --- | --- |
+| Primary purpose | DNS management and diagnostics | Self-contained development stack | Integrated Laravel/PHP environment | Minimal PHP environment | General-purpose DNS and DHCP service |
+| Native macOS interface | **Yes — app and menu bar** | Yes — menu bar app | Yes — app and menu bar | No — CLI | No — configuration files and CLI |
+| DNS implementation | Manages the existing Homebrew dnsmasq installation | Built-in KettleDNS for `*.test` | Bundled dnsmasq for local sites | Installs and configures Homebrew dnsmasq | Direct dnsmasq configuration |
+| Requires Homebrew | **Yes** | No | No | Yes | Yes, for a Homebrew installation |
+| Existing mapping discovery | **Yes — including source file and line** | Migration-oriented discovery | Valet migration support | Own Valet sites and configuration | Manual inspection |
+| Review, validation, and rollback | **Built in for each transaction** | Stack managed internally | Stack managed internally | CLI-managed configuration | Manual |
+| macOS resolver management | **Per domain, with repair and health checks** | Automatic `*.test` resolver | Automatic local-site resolver | Automatic `*.test` resolver | Manual `/etc/resolver` files |
+| Web server | Bring your own | Apache | nginx | nginx | Bring your own |
+| PHP and Node.js runtimes | Bring your own | Included | Included | PHP required; Node.js separate | Bring your own |
+| Database services | Bring your own | MySQL included or detected | Available through Herd Pro | Bring your own | Bring your own |
+| Local TLS | Bring your own | Included | Included | Included | Manual |
+| Framework coupling | **None** | None | Laravel-first with additional drivers | PHP-focused with additional drivers | None |
+| Best choice when… | **You want safe control over DNS without replacing your stack** | You want everything bundled in one app | You want a polished Laravel/PHP workflow | You prefer a lightweight, CLI-first PHP workflow | You want complete low-level control |
+
+> **In short:** choose Pawxy to manage DNS without adopting a development
+> stack; Kettle Code for an all-in-one environment; Herd for a polished
+> Laravel/PHP experience; or Valet for a minimal, CLI-first PHP workflow.
+
+These tools are not all direct replacements. Kettle Code, Herd, and Valet own
+more of the development stack; Pawxy intentionally owns less. It can complement
+a custom nginx, Caddy, Apache, Docker, Node.js, Ruby, Go, or PHP setup without
+forcing that setup into a particular project convention.
+
+Pawxy is the strongest fit when the DNS configuration itself is the product
+you need to manage: discovering existing directives, reviewing changes,
+resolving duplicates, validating the complete configuration, maintaining
+macOS resolver files, restarting dnsmasq once, and confirming that the final
+hostname resolves as expected.
 
 ## Use cases
 
