@@ -37,10 +37,11 @@ Keep an encrypted backup of this private key. Losing it prevents installed copie
 
 ## Publish a release
 
-Use an annotated semantic-version tag. Its message can contain the release notes.
+Use an annotated semantic-version tag after preparing the version and build
+number in the project.
 
 ```sh
-git tag -a v1.0.0 -m "Initial public release"
+git tag -a v1.0.0 -m "chore(release): prepare v1.0.0"
 git push origin v1.0.0
 ```
 
@@ -48,8 +49,18 @@ The `Release Pawxy` GitHub Action then:
 
 1. builds an ad-hoc signed Release app;
 2. injects the current GitHub repository into `SUFeedURL`;
-3. creates a ZIP preserving macOS metadata;
-4. signs the update with Sparkle EdDSA;
-5. publishes the ZIP, `appcast.xml`, and SHA-256 checksum to GitHub Releases.
+3. generates categorized release notes from every commit since the previous tag;
+4. excludes the mechanical `chore(release): prepare` commit from those notes;
+5. creates a ZIP preserving macOS metadata;
+6. embeds the same release notes in the Sparkle appcast;
+7. signs the update with Sparkle EdDSA;
+8. publishes the notes, ZIP, `appcast.xml`, and SHA-256 checksum to GitHub Releases.
+
+You can preview the generated notes before tagging:
+
+```sh
+Scripts/generate-release-notes.sh v1.0.0 /tmp/Pawxy-release-notes.md
+cat /tmp/Pawxy-release-notes.md
+```
 
 Do not manually replace a ZIP after publishing it. Create a new version and tag so that the Sparkle signature, version metadata, and archive always agree.

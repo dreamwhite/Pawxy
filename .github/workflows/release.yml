@@ -63,17 +63,19 @@ jobs:
           app="$DERIVED_DATA/Build/Products/Release/Pawxy.app"
           version="${{ steps.version.outputs.value }}"
           archive="$DISTRIBUTION_DIR/Pawxy-$version.zip"
-          notes="$DISTRIBUTION_DIR/Pawxy-$version.md"
 
           test -d "$app"
           codesign --verify --deep --strict --verbose=2 "$app"
           mkdir -p "$DISTRIBUTION_DIR"
           ditto -c -k --sequesterRsrc --keepParent "$app" "$archive"
 
-          git tag -l --format='%(contents)' "$GITHUB_REF_NAME" > "$notes"
-          if [[ ! -s "$notes" ]]; then
-            printf 'Pawxy %s\n' "$version" > "$notes"
-          fi
+      - name: Generate release notes
+        shell: bash
+        run: |
+          version="${{ steps.version.outputs.value }}"
+          Scripts/generate-release-notes.sh \
+            "$GITHUB_REF_NAME" \
+            "$DISTRIBUTION_DIR/Pawxy-$version.md"
 
       - name: Generate signed Sparkle appcast
         env:
@@ -102,6 +104,7 @@ jobs:
         run: |
           version="${{ steps.version.outputs.value }}"
           archive="$DISTRIBUTION_DIR/Pawxy-$version.zip"
+          notes="$DISTRIBUTION_DIR/Pawxy-$version.md"
           (
             cd "$DISTRIBUTION_DIR"
             shasum -a 256 "Pawxy-$version.zip" > SHA256SUMS.txt
@@ -112,5 +115,5 @@ jobs:
             "$DISTRIBUTION_DIR/appcast.xml" \
             "$DISTRIBUTION_DIR/SHA256SUMS.txt" \
             --title "Pawxy $version" \
-            --generate-notes \
+            --notes-file "$notes" \
             --latest
