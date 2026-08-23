@@ -1,4 +1,31 @@
-# Pawxy
+<p align="center">
+  <img
+    src="Pawxy/Assets.xcassets/AppIcon.appiconset/pawprint-256x256.png"
+    width="128"
+    height="128"
+    alt="Pawxy app icon"
+  >
+</p>
+
+<h1 align="center">Pawxy</h1>
+
+<p align="center">
+  <strong>Local DNS for macOS, without the configuration-file juggling.</strong>
+</p>
+
+<p align="center">
+  <a href="https://github.com/dreamwhite/Pawxy/releases/latest"><img src="https://img.shields.io/github/v/release/dreamwhite/Pawxy?display_name=tag&sort=semver&style=flat-square" alt="Latest release"></a>
+  <a href="https://github.com/dreamwhite/Pawxy/actions/workflows/release.yml"><img src="https://img.shields.io/github/actions/workflow/status/dreamwhite/Pawxy/release.yml?branch=main&style=flat-square&label=release" alt="Release workflow"></a>
+  <img src="https://img.shields.io/badge/macOS-26.5%2B-111111?style=flat-square&logo=apple" alt="macOS 26.5 or later">
+  <img src="https://img.shields.io/badge/Swift-5-F05138?style=flat-square&logo=swift&logoColor=white" alt="Swift 5">
+</p>
+
+<p align="center">
+  <a href="#why-pawxy">Why Pawxy?</a> ·
+  <a href="#features">Features</a> ·
+  <a href="#installing-a-release">Install</a> ·
+  <a href="#getting-started">Getting started</a>
+</p>
 
 Pawxy is a native macOS utility for managing local development domains with
 [dnsmasq](https://thekelleys.org.uk/dnsmasq/doc.html). It discovers existing
@@ -25,9 +52,10 @@ sync:
 - a service restart;
 - and a final resolution test through both dnsmasq and macOS.
 
-Pawxy treats those pieces as one operation. Changes are validated, backed up,
-applied through the standard macOS administrator authorization prompt, and
-followed by a service restart when required.
+Pawxy stages edits until you are ready, previews the complete transaction, and
+then treats all of those pieces as one operation. The batch is validated,
+backed up, applied through a single standard macOS administrator authorization
+prompt, and followed by one service restart.
 
 ## Use cases
 
@@ -66,6 +94,9 @@ managed `.conf` file per new domain.
 - Automatic discovery of existing dnsmasq mappings.
 - One readable dnsmasq configuration file per Pawxy-managed domain.
 - Exact-domain and domain-plus-subdomains coverage.
+- Reviewable pending changes applied with one authorization and one restart.
+- Explicit conflict reporting for duplicate dnsmasq directives.
+- Safe editing of shared `address` directives without dropping sibling domains.
 - Managed `/etc/resolver` entries for enabled domains.
 - Enable, disable, edit, and delete operations that update the real dnsmasq
   configuration.
@@ -123,14 +154,22 @@ Choose **Add domain** or press <kbd>⌘</kbd><kbd>N</kbd>, then provide:
 - exact-domain or subdomain coverage;
 - and its initial enabled state.
 
-For a zone named `storefront.test`, Pawxy writes a dnsmasq-compatible directive:
+For an exact hostname, Pawxy writes a dnsmasq-compatible record:
+
+```ini
+host-record=storefront.test,127.0.0.1
+```
+
+For a domain and all of its subdomains, it writes a DNS zone:
 
 ```ini
 address=/storefront.test/127.0.0.1
 ```
 
-It also creates the corresponding macOS resolver, validates the complete
-configuration, and restarts dnsmasq.
+The change first appears in the pending-changes bar. Choose **Review** to inspect
+the complete batch, then **Apply Changes**. Pawxy creates the corresponding
+macOS resolvers, validates the complete configuration, asks for administrator
+authorization once, and restarts dnsmasq once.
 
 ### Test a domain
 
@@ -151,13 +190,15 @@ their original directive style and surrounding content.
 
 For protected changes, the app performs this sequence:
 
-1. build a typed file transaction;
-2. validate every destination against an allowlist;
-3. create rollback backups;
-4. write or remove the requested dnsmasq and resolver files;
-5. run `dnsmasq --test` against the complete configuration;
-6. restore the previous files if validation fails;
-7. restart the Homebrew dnsmasq service after a successful change.
+1. stage and coalesce domain edits without touching system files;
+2. show the resulting batch for review;
+3. build one typed file transaction;
+4. validate every destination against an allowlist;
+5. create rollback backups;
+6. write or remove all requested dnsmasq and resolver files;
+7. run `dnsmasq --test` against the complete configuration;
+8. restore the previous files if validation fails;
+9. restart the Homebrew dnsmasq service once after a successful batch.
 
 ## Security model
 
