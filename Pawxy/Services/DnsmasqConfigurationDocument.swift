@@ -10,8 +10,10 @@ nonisolated enum DnsmasqConfigurationDocument {
     private static let managedComment = "# Managed by Pawxy"
 
     static func managedFile(for domain: LocalDomain) -> String {
-        let description = "Resolve \(domain.domain) and its subdomains to \(domain.address) for local development."
-        let directive = addressDirective(for: domain)
+        let description = domain.wildcard
+            ? "Resolve \(domain.domain) and its subdomains to \(domain.address) for local development."
+            : "Resolve the exact hostname \(domain.domain) to \(domain.address) for local development."
+        let directive = baseDirective(for: domain)
         let renderedDirective = domain.enabled ? directive : disabledPrefix + directive
         return "\(managedComment). \(description)\n\(renderedDirective)\n"
     }
@@ -66,6 +68,36 @@ nonisolated enum DnsmasqConfigurationDocument {
             throw DnsmasqConfigurationManager.ManagerError.directiveNotFound(oldDomain.domain)
         }
 
+        if let sharedAddress = parsedAddressDirective(from: lines[index]),
+           sharedAddress.domains.count > 1,
+           let domainIndex = sharedAddress.domains.firstIndex(where: {
+               normalizedDomain($0) == oldDomain.domain.lowercased()
+           }) {
+            let originalEnabled = !lines[index]
+                .trimmingCharacters(in: .whitespaces)
+                .hasPrefix(disabledPrefix)
+
+            if newDomain.wildcard,
+               newDomain.address == sharedAddress.address,
+               newDomain.enabled == originalEnabled {
+                var domains = sharedAddress.domains
+                domains[domainIndex] = newDomain.domain
+                lines[index] = rendered(
+                    addressDirective(domains: domains, address: sharedAddress.address),
+                    enabled: originalEnabled
+                )
+            } else {
+                var remainingDomains = sharedAddress.domains
+                remainingDomains.remove(at: domainIndex)
+                lines[index] = rendered(
+                    addressDirective(domains: remainingDomains, address: sharedAddress.address),
+                    enabled: originalEnabled
+                )
+                lines.insert(render(newDomain), at: index + 1)
+            }
+            return lines.joined(separator: "\n")
+        }
+
         let oldDirective = uncommentedDirective(lines[index])
         let preservesAddressStyle = oldDomain.wildcard == newDomain.wildcard
             && oldDirective.hasPrefix("address=")
@@ -93,6 +125,23 @@ nonisolated enum DnsmasqConfigurationDocument {
         var lines = contents.components(separatedBy: .newlines)
         guard let index = matchingLineIndex(for: domain, nearLine: nearLine, in: lines) else {
             throw DnsmasqConfigurationManager.ManagerError.directiveNotFound(domain.domain)
+        }
+
+        if let sharedAddress = parsedAddressDirective(from: lines[index]),
+           sharedAddress.domains.count > 1,
+           let domainIndex = sharedAddress.domains.firstIndex(where: {
+               normalizedDomain($0) == domain.domain.lowercased()
+           }) {
+            var remainingDomains = sharedAddress.domains
+            remainingDomains.remove(at: domainIndex)
+            let enabled = !lines[index]
+                .trimmingCharacters(in: .whitespaces)
+                .hasPrefix(disabledPrefix)
+            lines[index] = rendered(
+                addressDirective(domains: remainingDomains, address: sharedAddress.address),
+                enabled: enabled
+            )
+            return lines.joined(separator: "\n")
         }
 
         lines.remove(at: index)
@@ -165,6 +214,10 @@ nonisolated enum DnsmasqConfigurationDocument {
         "address=/\(domain.domain)/\(domain.address)"
     }
 
+    private static func addressDirective(domains: [String], address: String) -> String {
+        "address=/\(domains.joined(separator: "/"))/\(address)"
+    }
+
     private static func hostRecordDirective(for domain: LocalDomain) -> String {
         "host-record=\(domain.domain),\(domain.address)"
     }
@@ -175,5 +228,29 @@ nonisolated enum DnsmasqConfigurationDocument {
             return String(trimmed.dropFirst(disabledPrefix.count))
         }
         return trimmed
+    }
+
+    private static func rendered(_ directive: String, enabled: Bool) -> String {
+        enabled ? directive : disabledPrefix + directive
+    }
+
+    private static func normalizedDomain(_ domain: String) -> String {
+        domain.trimmingCharacters(in: CharacterSet(charactersIn: ".")).lowercased()
+    }
+
+    private static func parsedAddressDirective(from line: String) -> ParsedAddressDirective? {
+        let directive = uncommentedDirective(line)
+        guard directive.hasPrefix("address=") else { return nil }
+        let value = String(directive.dropFirst("address=".count))
+        let parts = value.split(separator: "/", omittingEmptySubsequences: false).map(String.init)
+        guard parts.count >= 3, let address = parts.last else { return nil }
+        let domains = Array(parts.dropFirst().dropLast())
+        guard !domains.isEmpty else { return nil }
+        return ParsedAddressDirective(domains: domains, address: address)
+    }
+
+    private struct ParsedAddressDirective {
+        let domains: [String]
+        let address: String
     }
 }

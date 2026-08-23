@@ -45,6 +45,7 @@ nonisolated struct LocalDomain: Identifiable, Codable, Equatable, Sendable {
 nonisolated enum LocalDomainOrigin: Codable, Equatable, Sendable {
     case manual
     case imported(file: String, line: Int)
+    case conflict(sources: [DomainDirectiveSource])
 
     var label: String {
         switch self {
@@ -52,6 +53,17 @@ nonisolated enum LocalDomainOrigin: Codable, Equatable, Sendable {
             return String(localized: "Created in Pawxy")
         case let .imported(file, line):
             return "\(URL(fileURLWithPath: file).lastPathComponent):\(line)"
+        case let .conflict(sources):
+            return String(localized: "Conflict in \(sources.count) directives")
         }
+    }
+}
+
+nonisolated struct DomainDirectiveSource: Codable, Equatable, Hashable, Sendable {
+    let file: String
+    let line: Int
+
+    var label: String {
+        "\(URL(fileURLWithPath: file).lastPathComponent):\(line)"
     }
 }

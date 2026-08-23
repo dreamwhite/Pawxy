@@ -71,14 +71,23 @@ struct LocalDomainDraft {
     }
 
     private var isValidDomain: Bool {
+        guard normalizedDomain.utf8.count <= 253,
+              normalizedDomain.unicodeScalars.allSatisfy({ $0.isASCII })
+        else {
+            return false
+        }
+
         let labels = normalizedDomain.split(separator: ".", omittingEmptySubsequences: false)
 
         return labels.count >= 2 && labels.allSatisfy { label in
+            guard label.utf8.count <= 63 else { return false }
             guard let first = label.first, let last = label.last else { return false }
-            guard first.isLetter || first.isNumber else { return false }
-            guard last.isLetter || last.isNumber else { return false }
+            guard first.isASCII && (first.isLetter || first.isNumber) else { return false }
+            guard last.isASCII && (last.isLetter || last.isNumber) else { return false }
 
-            return label.allSatisfy { $0.isLetter || $0.isNumber || $0 == "-" }
+            return label.allSatisfy {
+                $0.isASCII && ($0.isLetter || $0.isNumber || $0 == "-")
+            }
         }
     }
 
@@ -95,6 +104,7 @@ struct LocalDomainDraft {
             }
 
             return (0...255).contains(value)
+                && (octet == "0" || !octet.hasPrefix("0"))
         }
     }
 }

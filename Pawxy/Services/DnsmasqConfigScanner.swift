@@ -83,9 +83,31 @@ nonisolated struct DnsmasqConfigScanner {
             }
         }
 
-        var seenDomains = Set<String>()
-        return results
-            .filter { seenDomains.insert($0.domain.lowercased()).inserted }
+        return Dictionary(grouping: results, by: { $0.domain.lowercased() })
+            .values
+            .compactMap { matches -> DiscoveredDomain? in
+                let ordered = matches.sorted {
+                    if $0.sourceFile == $1.sourceFile {
+                        return $0.sourceLine < $1.sourceLine
+                    }
+                    return $0.sourceFile.localizedStandardCompare($1.sourceFile) == .orderedAscending
+                }
+                guard let preferred = ordered.first else { return nil }
+                guard ordered.count > 1 else { return preferred }
+
+                return DiscoveredDomain(
+                    id: preferred.id,
+                    domain: preferred.domain,
+                    address: preferred.address,
+                    wildcard: preferred.wildcard,
+                    enabled: preferred.enabled,
+                    sourceFile: preferred.sourceFile,
+                    sourceLine: preferred.sourceLine,
+                    conflictingSources: ordered.map {
+                        DomainDirectiveSource(file: $0.sourceFile, line: $0.sourceLine)
+                    }
+                )
+            }
             .sorted { $0.domain.localizedStandardCompare($1.domain) == .orderedAscending }
     }
 

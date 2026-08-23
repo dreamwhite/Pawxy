@@ -15,6 +15,7 @@ nonisolated struct DiscoveredDomain: Identifiable, Equatable, Sendable {
     let enabled: Bool
     let sourceFile: String
     let sourceLine: Int
+    let conflictingSources: [DomainDirectiveSource]
 
     init(
         id: UUID = UUID(),
@@ -23,7 +24,8 @@ nonisolated struct DiscoveredDomain: Identifiable, Equatable, Sendable {
         wildcard: Bool,
         enabled: Bool = true,
         sourceFile: String,
-        sourceLine: Int
+        sourceLine: Int,
+        conflictingSources: [DomainDirectiveSource] = []
     ) {
         self.id = id
         self.domain = domain
@@ -32,6 +34,7 @@ nonisolated struct DiscoveredDomain: Identifiable, Equatable, Sendable {
         self.enabled = enabled
         self.sourceFile = sourceFile
         self.sourceLine = sourceLine
+        self.conflictingSources = conflictingSources
     }
 
     var localDomain: LocalDomain {
@@ -40,7 +43,9 @@ nonisolated struct DiscoveredDomain: Identifiable, Equatable, Sendable {
             address: address,
             wildcard: wildcard,
             enabled: enabled,
-            origin: .imported(file: sourceFile, line: sourceLine)
+            origin: conflictingSources.isEmpty
+                ? .imported(file: sourceFile, line: sourceLine)
+                : .conflict(sources: conflictingSources)
         )
     }
 }
