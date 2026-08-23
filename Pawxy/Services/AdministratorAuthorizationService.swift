@@ -231,7 +231,7 @@ extension AdministratorAuthorizationService {
         }
     }
 
-    private struct ValidatedPaths {
+    private nonisolated struct ValidatedPaths {
         let prefix: String
         let policy: PathPolicy
 
