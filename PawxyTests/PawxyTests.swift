@@ -48,6 +48,20 @@ struct PawxyTests {
         #expect(draft.validationMessage == "Enter a valid IPv4 address.")
     }
 
+    @Test func draftRejectsUnsupportedDNSNamesAndAmbiguousIPv4Addresses() {
+        var draft = LocalDomainDraft()
+        draft.domain = "caffè.test"
+        draft.address = "127.0.0.1"
+        #expect(draft.localDomain == nil)
+
+        draft.domain = "\(String(repeating: "a", count: 64)).test"
+        #expect(draft.localDomain == nil)
+
+        draft.domain = "example.test"
+        draft.address = "127.00.0.1"
+        #expect(draft.localDomain == nil)
+    }
+
     @Test func dependencyCheckerReportsExecutableAvailability() {
         let checker = DependencyChecker(
             homebrewCandidates: ["/usr/bin/true"],
@@ -108,6 +122,31 @@ struct PawxyTests {
         #expect(domain.domain == "disabled.test")
         #expect(!domain.enabled)
         #expect(domain.sourceLine == 1)
+    }
+
+    @Test func dnsmasqScannerReportsConflictingDirectives() throws {
+        let temporaryDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let rootFile = temporaryDirectory.appendingPathComponent("dnsmasq.conf")
+        let includedFile = temporaryDirectory.appendingPathComponent("duplicate.conf")
+        defer { try? FileManager.default.removeItem(at: temporaryDirectory) }
+
+        try FileManager.default.createDirectory(at: temporaryDirectory, withIntermediateDirectories: true)
+        try "conf-file=\(includedFile.path)\naddress=/duplicate.test/127.0.0.1\n"
+            .write(to: rootFile, atomically: true, encoding: .utf8)
+        try "host-record=duplicate.test,127.0.0.2\n"
+            .write(to: includedFile, atomically: true, encoding: .utf8)
+
+        let domains = DnsmasqConfigScanner(rootConfigurationFiles: [rootFile.path]).scan()
+        let domain = try #require(domains.first)
+
+        #expect(domains.count == 1)
+        guard case let .conflict(sources) = domain.localDomain.origin else {
+            Issue.record("Expected a conflict origin")
+            return
+        }
+        #expect(sources.count == 2)
+        #expect(Set(sources.map(\.file)) == Set([rootFile.path, includedFile.path]))
     }
 
     @MainActor
@@ -236,6 +275,36 @@ struct PawxyTests {
         #expect(result.contains("# Pawxy disabled: address=/emporion.local/127.0.0.1"))
     }
 
+    @Test func dnsmasqDocumentPreservesSiblingsInSharedAddressDirectives() throws {
+        let original = LocalDomain(
+            domain: "one.test",
+            address: "127.0.0.1",
+            wildcard: true,
+            origin: .imported(file: "/tmp/shared.conf", line: 1)
+        )
+        let contents = "address=/one.test/two.test/127.0.0.1\n"
+
+        var updated = original
+        updated.address = "127.0.0.2"
+        let replaced = try DnsmasqConfigurationDocument.replacing(
+            original,
+            nearLine: 1,
+            with: updated,
+            in: contents
+        )
+
+        #expect(replaced.contains("address=/two.test/127.0.0.1"))
+        #expect(replaced.contains("address=/one.test/127.0.0.2"))
+
+        let removed = try DnsmasqConfigurationDocument.removing(
+            original,
+            nearLine: 1,
+            from: contents
+        )
+        #expect(removed.contains("address=/two.test/127.0.0.1"))
+        #expect(!removed.contains("one.test"))
+    }
+
     @Test func pawxyManagedFilesAreDescriptiveAndDnsmasqCompatible() {
         let exact = LocalDomain(domain: "example.test", address: "127.0.0.1")
         let wildcard = LocalDomain(
@@ -247,11 +316,41 @@ struct PawxyTests {
         let exactContents = DnsmasqConfigurationDocument.managedFile(for: exact)
         let wildcardContents = DnsmasqConfigurationDocument.managedFile(for: wildcard)
 
-        #expect(exactContents.contains("# Managed by Pawxy. Resolve example.test and its subdomains to 127.0.0.1"))
-        #expect(exactContents.contains("address=/example.test/127.0.0.1"))
+        #expect(exactContents.contains("# Managed by Pawxy. Resolve the exact hostname example.test to 127.0.0.1"))
+        #expect(exactContents.contains("host-record=example.test,127.0.0.1"))
         #expect(wildcardContents.contains("# Managed by Pawxy. Resolve api.example.test and its subdomains"))
         #expect(wildcardContents.contains("address=/api.example.test/127.0.0.2"))
         #expect(DnsmasqConfigurationDocument.isManagedDomainFile(exactContents))
+    }
+
+    @MainActor
+    @Test func pendingChangesCoalesceWithoutTouchingTheBaseSnapshot() {
+        let original = LocalDomain(
+            domain: "example.test",
+            address: "127.0.0.1",
+            origin: .imported(file: "/tmp/example.conf", line: 1)
+        )
+        let pending = PendingDomainChanges()
+
+        var updated = original
+        updated.address = "127.0.0.2"
+        pending.stageUpdate(original: original, updated: updated)
+
+        var updatedAgain = updated
+        updatedAgain.enabled = false
+        pending.stageUpdate(original: updated, updated: updatedAgain)
+
+        #expect(pending.count == 1)
+        #expect(pending.domains(applyingTo: [original]) == [updatedAgain])
+
+        pending.stageDelete(updatedAgain)
+        #expect(pending.count == 1)
+        #expect(pending.domains(applyingTo: [original]).isEmpty)
+
+        let added = LocalDomain(domain: "new.test", address: "127.0.0.1")
+        pending.stageAdd(added)
+        pending.stageDelete(added)
+        #expect(pending.count == 1)
     }
 
     @Test func legacySplitRejectsCustomDnsmasqContent() {

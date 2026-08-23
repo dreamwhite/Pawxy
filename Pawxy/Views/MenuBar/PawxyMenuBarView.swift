@@ -131,7 +131,12 @@ struct PawxyMenuBarView: View {
     }
 
     private var activeCount: Int {
-        guard !healthResults.isEmpty else { return enabledDomains.count }
+        guard !healthResults.isEmpty else {
+            return enabledDomains.filter {
+                if case .conflict = $0.origin { return false }
+                return true
+            }.count
+        }
         return healthResults.values.reduce(into: 0) { count, result in
             if case .active = result {
                 count += 1
@@ -140,7 +145,11 @@ struct PawxyMenuBarView: View {
     }
 
     private var attentionCount: Int {
-        healthResults.values.filter(\.needsAttention).count
+        let conflicts = enabledDomains.filter {
+            if case .conflict = $0.origin { return true }
+            return false
+        }.count
+        return conflicts + healthResults.values.filter(\.needsAttention).count
     }
 
     private var resolverRepairCandidates: [LocalDomain] {
@@ -218,18 +227,7 @@ struct PawxyMenuBarView: View {
         }.value
         store.synchronize(with: discovered)
 
-        let snapshot = store.domains
-        var collected: [UUID: DomainResolutionTestResult] = [:]
-        await withTaskGroup(of: (UUID, DomainResolutionTestResult).self) { group in
-            for domain in snapshot {
-                group.addTask {
-                    (domain.id, await DnsmasqDomainTester().check(domain))
-                }
-            }
-            for await (id, result) in group {
-                collected[id] = result
-            }
-        }
+        let collected = await DomainHealthCheckService().check(store.domains)
 
         guard !Task.isCancelled else { return }
         healthResults = collected
@@ -264,13 +262,7 @@ struct PawxyMenuBarView: View {
         Task {
             do {
                 let installedCount = try await Task.detached {
-                    var count = 0
-                    for domain in candidates {
-                        if try DnsmasqConfigurationManager().ensureSystemResolver(for: domain) {
-                            count += 1
-                        }
-                    }
-                    return count
+                    try DnsmasqConfigurationManager().ensureSystemResolvers(for: candidates)
                 }.value
                 isRepairingResolvers = false
                 activityMessage = installedCount == 1

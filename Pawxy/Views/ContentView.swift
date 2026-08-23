@@ -11,6 +11,7 @@ import UniformTypeIdentifiers
 
 struct ContentView: View {
     @EnvironmentObject private var store: DomainStore
+    @StateObject private var pendingChanges = PendingDomainChanges()
 
     @State private var environmentStatus: DevelopmentEnvironmentStatus
     private let dnsmasqManager = DnsmasqConfigurationManager()
@@ -23,12 +24,15 @@ struct ContentView: View {
     @State private var hasLegacyConfiguration = false
     @State private var editorPresentation: DomainEditorPresentation?
     @State private var backupImportPresentation: BackupImportPresentation?
+    @State private var showsPendingChanges = false
     @State private var deletionCandidate: LocalDomain?
     @State private var serviceMessage: String?
     @State private var configurationError: String?
     @State private var updatingDomainIDs = Set<UUID>()
     @State private var healthCheckRevision = 0
     @State private var isPerformingServiceOperation = false
+    @State private var isRefreshingMappings = false
+    @State private var refreshTask: Task<Void, Never>?
 
     init(environmentStatus: DevelopmentEnvironmentStatus) {
         _environmentStatus = State(initialValue: environmentStatus)
@@ -46,6 +50,19 @@ struct ContentView: View {
         .frame(minWidth: 940, minHeight: 620)
         .sheet(item: $editorPresentation, content: domainEditor)
         .sheet(item: $backupImportPresentation, content: backupImportSheet)
+        .sheet(isPresented: $showsPendingChanges) {
+            PendingChangesView(
+                changes: pendingChanges.changes,
+                isApplying: isPerformingServiceOperation,
+                onApply: applyPendingChanges,
+                onDiscard: discardPendingChanges
+            )
+        }
+        .safeAreaInset(edge: .bottom) {
+            if !pendingChanges.isEmpty {
+                pendingChangesBar
+            }
+        }
         .confirmationDialog(
             "Delete \(deletionCandidate?.domain ?? "domain")?",
             isPresented: deletionBinding
@@ -74,6 +91,9 @@ struct ContentView: View {
         .task {
             refreshMappings()
         }
+        .onDisappear {
+            refreshTask?.cancel()
+        }
         .onReceive(NotificationCenter.default.publisher(for: .addPawxyDomain)) { _ in
             showDomainEditor()
         }
@@ -92,6 +112,36 @@ struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: .exportPawxyBackup)) { _ in
             exportBackup()
         }
+    }
+
+    private var effectiveDomains: [LocalDomain] {
+        pendingChanges.domains(applyingTo: store.domains)
+    }
+
+    private var pendingChangesBar: some View {
+        HStack(spacing: 12) {
+            Label(
+                pendingChanges.count == 1
+                    ? String(localized: "1 pending DNS change")
+                    : String(localized: "\(pendingChanges.count) pending DNS changes"),
+                systemImage: "tray.full.fill"
+            )
+            .font(.callout.weight(.semibold))
+
+            Spacer()
+
+            Button("Review") {
+                showsPendingChanges = true
+            }
+            Button("Discard", role: .destructive, action: discardPendingChanges)
+            Button("Apply Changes", action: applyPendingChanges)
+                .buttonStyle(.borderedProminent)
+                .disabled(isPerformingServiceOperation)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+        .background(.regularMaterial)
+        .overlay(alignment: .top) { Divider() }
     }
 
     @ViewBuilder
@@ -114,9 +164,12 @@ struct ContentView: View {
 
         case .domains:
             DomainsView(
-                store: store,
+                domains: effectiveDomains,
+                storeError: store.lastError,
                 searchText: $searchText,
+                isRefreshing: isRefreshingMappings,
                 updatingDomainIDs: updatingDomainIDs,
+                pendingDomainIDs: Set(pendingChanges.changes.map(\.id)),
                 healthCheckRevision: healthCheckRevision,
                 onAdd: showDomainEditor,
                 onRefresh: refreshMappings,
@@ -150,21 +203,14 @@ struct ContentView: View {
     private func domainEditor(_ presentation: DomainEditorPresentation) -> some View {
         DomainEditorView(
             domain: presentation.domain,
-            existingDomains: store.domains,
+            existingDomains: effectiveDomains,
             defaultAddress: defaultIPv4Address
         ) { domain in
             if let existingDomain = presentation.domain {
-                let managedDomain = try await Task.detached {
-                    try DnsmasqConfigurationManager().update(existingDomain, with: domain)
-                }.value
-                store.update(managedDomain)
+                pendingChanges.stageUpdate(original: existingDomain, updated: domain)
             } else {
-                let managedDomain = try await Task.detached {
-                    try DnsmasqConfigurationManager().add(domain)
-                }.value
-                store.add(managedDomain)
+                pendingChanges.stageAdd(domain)
             }
-            refreshMappings()
         }
     }
 
@@ -172,7 +218,7 @@ struct ContentView: View {
         BackupImportView(
             backup: presentation.backup,
             filename: presentation.filename,
-            existingDomainNames: Set(store.domains.map { $0.domain.lowercased() })
+            existingDomainNames: Set(effectiveDomains.map { $0.domain.lowercased() })
         ) { domains in
             let currentNames = Set(
                 DnsmasqConfigScanner().scan().map { $0.domain.lowercased() }
@@ -183,13 +229,12 @@ struct ContentView: View {
                 throw DnsmasqConfigurationManager.ManagerError.duplicateDomain(conflict.domain)
             }
 
-            _ = try await Task.detached {
-                try DnsmasqConfigurationManager().add(domains)
-            }.value
-            refreshMappings()
+            for domain in domains {
+                pendingChanges.stageAdd(domain)
+            }
             serviceMessage = domains.count == 1
-                ? String(localized: "Imported one mapping and restarted dnsmasq.")
-                : String(localized: "Imported \(domains.count) mappings and restarted dnsmasq.")
+                ? String(localized: "Added one imported mapping to pending changes.")
+                : String(localized: "Added \(domains.count) imported mappings to pending changes.")
         }
     }
 
@@ -228,10 +273,21 @@ struct ContentView: View {
     }
 
     private func refreshMappings() {
-        discoveredDomains = DnsmasqConfigScanner().scan()
-        store.synchronize(with: discoveredDomains)
-        hasLegacyConfiguration = dnsmasqManager.hasLegacyManagedConfiguration
-        healthCheckRevision &+= 1
+        refreshTask?.cancel()
+        isRefreshingMappings = true
+        refreshTask = Task {
+            let snapshot = await Task.detached(priority: .userInitiated) {
+                let domains = DnsmasqConfigScanner().scan()
+                let hasLegacy = DnsmasqConfigurationManager().hasLegacyManagedConfiguration
+                return (domains, hasLegacy)
+            }.value
+            guard !Task.isCancelled else { return }
+            discoveredDomains = snapshot.0
+            store.synchronize(with: snapshot.0)
+            hasLegacyConfiguration = snapshot.1
+            healthCheckRevision &+= 1
+            isRefreshingMappings = false
+        }
     }
 
     private func restartDnsmasq() {
@@ -342,25 +398,16 @@ struct ContentView: View {
     }
 
     private func setDomainEnabled(_ enabled: Bool, domain: LocalDomain) {
-        guard !updatingDomainIDs.contains(domain.id),
-              store.domains.first(where: { $0.id == domain.id })?.enabled != enabled
+        guard !updatingDomainIDs.contains(domain.id), domain.enabled != enabled
         else {
             return
         }
-
-        updatingDomainIDs.insert(domain.id)
-        Task {
-            defer { updatingDomainIDs.remove(domain.id) }
-            do {
-                let managedDomain = try await Task.detached {
-                    try DnsmasqConfigurationManager().setEnabled(enabled, for: domain)
-                }.value
-                store.update(managedDomain)
-                refreshMappings()
-            } catch {
-                configurationError = error.localizedDescription
-            }
-        }
+        var updated = domain
+        updated.enabled = enabled
+        let original = pendingChanges.change(for: domain.id)?.originalDomain
+            ?? store.domains.first(where: { $0.id == domain.id })
+            ?? domain
+        pendingChanges.stageUpdate(original: original, updated: updated)
     }
 
     private func repairSystemResolver(for domain: LocalDomain) {
@@ -387,19 +434,34 @@ struct ContentView: View {
         guard let deletionCandidate else { return }
         self.deletionCandidate = nil
         guard !updatingDomainIDs.contains(deletionCandidate.id) else { return }
-        updatingDomainIDs.insert(deletionCandidate.id)
+        pendingChanges.stageDelete(deletionCandidate)
+    }
+
+    private func applyPendingChanges() {
+        guard !pendingChanges.isEmpty, !isPerformingServiceOperation else { return }
+        let changes = pendingChanges.changes
+        isPerformingServiceOperation = true
         Task {
-            defer { updatingDomainIDs.remove(deletionCandidate.id) }
+            defer { isPerformingServiceOperation = false }
             do {
-                try await Task.detached {
-                    try DnsmasqConfigurationManager().delete(deletionCandidate)
+                try await Task.detached(priority: .userInitiated) {
+                    try DnsmasqConfigurationManager().applyPendingChanges(changes)
                 }.value
-                store.delete(deletionCandidate)
+                pendingChanges.discardAll()
+                showsPendingChanges = false
                 refreshMappings()
+                serviceMessage = changes.count == 1
+                    ? String(localized: "Applied one DNS change and restarted dnsmasq.")
+                    : String(localized: "Applied \(changes.count) DNS changes and restarted dnsmasq.")
             } catch {
                 configurationError = error.localizedDescription
             }
         }
+    }
+
+    private func discardPendingChanges() {
+        pendingChanges.discardAll()
+        showsPendingChanges = false
     }
 
 }

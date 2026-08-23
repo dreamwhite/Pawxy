@@ -70,6 +70,23 @@ nonisolated struct DnsmasqConfigurationManager {
     }
 
     @discardableResult
+    func ensureSystemResolvers(for domains: [LocalDomain]) throws -> Int {
+        var installationsByPath: [String: ConfigurationInstallation] = [:]
+        for domain in domains where domain.enabled {
+            let changes = try resolverChanges(from: nil, to: domain)
+            for installation in changes.installations {
+                installationsByPath[installation.destination] = installation
+            }
+        }
+        guard !installationsByPath.isEmpty else { return 0 }
+        try apply(
+            installations: Array(installationsByPath.values),
+            restartDnsmasq: false
+        )
+        return installationsByPath.count
+    }
+
+    @discardableResult
     func add(_ domain: LocalDomain) throws -> LocalDomain {
         try add([domain])[0]
     }
@@ -78,7 +95,7 @@ nonisolated struct DnsmasqConfigurationManager {
     func add(_ domains: [LocalDomain]) throws -> [LocalDomain] {
         guard !domains.isEmpty else { return [] }
 
-        let managedDomains = domains.map(asDnsZone)
+        let managedDomains = domains
         let destinations = managedDomains.map { configurationFilePath(for: $0.domain) }
         guard Set(destinations).count == destinations.count else {
             throw ManagerError.duplicateDomain(managedDomains[0].domain)
@@ -111,12 +128,15 @@ nonisolated struct DnsmasqConfigurationManager {
 
     @discardableResult
     func update(_ oldDomain: LocalDomain, with newDomain: LocalDomain) throws -> LocalDomain {
+        if case let .conflict(sources) = oldDomain.origin {
+            throw ManagerError.conflictingDirectives(oldDomain.domain, sources)
+        }
         guard case let .imported(file, line) = oldDomain.origin else {
             return hasSameConfiguration(oldDomain, newDomain) ? oldDomain : try add(newDomain)
         }
 
         if try isPawxyDomainFile(file) {
-            let normalizedDomain = asDnsZone(newDomain)
+            let normalizedDomain = newDomain
             let expectedContents = DnsmasqConfigurationDocument.managedFile(for: normalizedDomain)
             let expectedPath = configurationFilePath(for: normalizedDomain.domain)
             if standardized(file) == standardized(expectedPath),
@@ -170,6 +190,9 @@ nonisolated struct DnsmasqConfigurationManager {
 
     @discardableResult
     func setEnabled(_ enabled: Bool, for domain: LocalDomain) throws -> LocalDomain {
+        if case let .conflict(sources) = domain.origin {
+            throw ManagerError.conflictingDirectives(domain.domain, sources)
+        }
         var updatedDomain = domain
         updatedDomain.enabled = enabled
 
@@ -220,6 +243,9 @@ nonisolated struct DnsmasqConfigurationManager {
     }
 
     func delete(_ domain: LocalDomain) throws {
+        if case let .conflict(sources) = domain.origin {
+            throw ManagerError.conflictingDirectives(domain.domain, sources)
+        }
         guard case let .imported(file, line) = domain.origin else { return }
         let resolverChanges = try resolverChanges(from: domain, to: nil)
 
@@ -264,7 +290,7 @@ nonisolated struct DnsmasqConfigurationManager {
         ).scan()
         guard !discovered.isEmpty else { return 0 }
 
-        let domains = discovered.map(\.localDomain).map(asDnsZone)
+        let domains = discovered.map(\.localDomain)
         let destinations = domains.map { configurationFilePath(for: $0.domain) }
         for (domain, destination) in zip(domains, destinations) {
             try ensureDestinationIsAvailable(destination, domain: domain.domain)
@@ -290,12 +316,126 @@ nonisolated struct DnsmasqConfigurationManager {
         try runPrivilegedRestart()
     }
 
+    func applyPendingChanges(_ changes: [PendingDomainChange]) throws {
+        guard !changes.isEmpty else { return }
+
+        var plannedWrites: [String: String] = [:]
+        var plannedDeletions = Set<String>()
+
+        func contents(at path: String) throws -> String {
+            if let contents = plannedWrites[path] { return contents }
+            guard !plannedDeletions.contains(path) else {
+                throw ManagerError.directiveNotFound(URL(fileURLWithPath: path).lastPathComponent)
+            }
+            return try readConfiguration(at: path)
+        }
+
+        func stageWrite(_ contents: String, to path: String) {
+            plannedDeletions.remove(path)
+            plannedWrites[path] = contents
+        }
+
+        func stageDeletion(_ path: String) {
+            plannedWrites.removeValue(forKey: path)
+            plannedDeletions.insert(path)
+        }
+
+        func stageResolverChanges(from oldDomain: LocalDomain?, to newDomain: LocalDomain?) throws {
+            let changes = try resolverChanges(from: oldDomain, to: newDomain)
+            for deletion in changes.deletions {
+                stageDeletion(deletion)
+            }
+            for installation in changes.installations {
+                stageWrite(installation.contents, to: installation.destination)
+            }
+        }
+
+        func ensurePlannedDestinationIsAvailable(_ destination: String, domain: String) throws {
+            if plannedDeletions.contains(destination) { return }
+            if plannedWrites[destination] != nil {
+                throw ManagerError.duplicateDomain(domain)
+            }
+            try ensureDestinationIsAvailable(destination, domain: domain)
+        }
+
+        for change in changes {
+            switch change {
+            case let .add(domain):
+                let destination = configurationFilePath(for: domain.domain)
+                try ensurePlannedDestinationIsAvailable(destination, domain: domain.domain)
+                stageWrite(DnsmasqConfigurationDocument.managedFile(for: domain), to: destination)
+                try stageResolverChanges(from: nil, to: domain)
+
+            case let .update(original, updated):
+                if case let .conflict(sources) = original.origin {
+                    throw ManagerError.conflictingDirectives(original.domain, sources)
+                }
+                guard case let .imported(file, line) = original.origin else {
+                    let destination = configurationFilePath(for: updated.domain)
+                    try ensurePlannedDestinationIsAvailable(destination, domain: updated.domain)
+                    stageWrite(DnsmasqConfigurationDocument.managedFile(for: updated), to: destination)
+                    try stageResolverChanges(from: original, to: updated)
+                    continue
+                }
+
+                if try isPawxyDomainFile(file) {
+                    let destination = configurationFilePath(for: updated.domain)
+                    if standardized(file) != standardized(destination) {
+                        try ensurePlannedDestinationIsAvailable(destination, domain: updated.domain)
+                        stageDeletion(file)
+                    }
+                    stageWrite(DnsmasqConfigurationDocument.managedFile(for: updated), to: destination)
+                } else {
+                    let updatedContents = try DnsmasqConfigurationDocument.replacing(
+                        original,
+                        nearLine: line,
+                        with: updated,
+                        in: contents(at: file)
+                    )
+                    stageWrite(updatedContents, to: file)
+                }
+                try stageResolverChanges(from: original, to: updated)
+
+            case let .delete(domain):
+                if case let .conflict(sources) = domain.origin {
+                    throw ManagerError.conflictingDirectives(domain.domain, sources)
+                }
+                guard case let .imported(file, line) = domain.origin else { continue }
+
+                if try isPawxyDomainFile(file) {
+                    stageDeletion(file)
+                } else {
+                    let updatedContents = try DnsmasqConfigurationDocument.removing(
+                        domain,
+                        nearLine: line,
+                        from: contents(at: file)
+                    )
+                    if isLegacyManagedFile(file),
+                       updatedContents.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        stageDeletion(file)
+                    } else {
+                        stageWrite(updatedContents, to: file)
+                    }
+                }
+                try stageResolverChanges(from: domain, to: nil)
+            }
+        }
+
+        let installations = plannedWrites.map {
+            ConfigurationInstallation(contents: $0.value, destination: $0.key)
+        }
+        try apply(
+            installations: installations,
+            deletions: Array(plannedDeletions.subtracting(plannedWrites.keys))
+        )
+    }
+
     private func replaceManagedFile(
         _ oldDomain: LocalDomain,
         file oldFile: String,
         newDomain: LocalDomain
     ) throws -> LocalDomain {
-        let newDomain = asDnsZone(newDomain)
+        let newDomain = newDomain
         let destination = configurationFilePath(for: newDomain.domain)
         if standardized(oldFile) != standardized(destination) {
             try ensureDestinationIsAvailable(destination, domain: newDomain.domain)
@@ -319,7 +459,7 @@ nonisolated struct DnsmasqConfigurationManager {
         newDomain: LocalDomain,
         legacyFile: String
     ) throws -> LocalDomain {
-        let newDomain = asDnsZone(newDomain)
+        let newDomain = newDomain
         let destination = configurationFilePath(for: newDomain.domain)
         try ensureDestinationIsAvailable(destination, domain: newDomain.domain)
 
@@ -400,12 +540,6 @@ nonisolated struct DnsmasqConfigurationManager {
             enabled: domain.enabled,
             origin: .imported(file: file, line: line)
         )
-    }
-
-    private func asDnsZone(_ domain: LocalDomain) -> LocalDomain {
-        var domain = domain
-        domain.wildcard = true
-        return domain
     }
 
     private func hasSameConfiguration(_ lhs: LocalDomain, _ rhs: LocalDomain) -> Bool {
@@ -544,6 +678,7 @@ extension DnsmasqConfigurationManager {
         case duplicateDomain(String)
         case configurationFileExists(String)
         case resolverFileExists(String)
+        case conflictingDirectives(String, [DomainDirectiveSource])
         case legacyConfigurationContainsCustomContent(String)
         case couldNotRead(String, String)
         case couldNotWrite(String, String)
@@ -560,6 +695,9 @@ extension DnsmasqConfigurationManager {
                 return String(localized: "Pawxy cannot create \(path) because that file already exists and is not managed by Pawxy.")
             case let .resolverFileExists(path):
                 return String(localized: "Pawxy cannot use \(path) because it already exists and does not route to local dnsmasq. The file was left unchanged.")
+            case let .conflictingDirectives(domain, sources):
+                let sourceList = sources.map(\.label).joined(separator: ", ")
+                return String(localized: "Pawxy found conflicting directives for \(domain) in \(sourceList). Resolve the conflict in the source files before editing this domain.")
             case let .legacyConfigurationContainsCustomContent(path):
                 return String(localized: "Pawxy did not split \(path) because it contains custom content. The file was left unchanged.")
             case let .couldNotRead(path, detail):

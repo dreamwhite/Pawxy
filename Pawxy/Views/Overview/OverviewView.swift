@@ -30,6 +30,8 @@ struct OverviewView: View {
                 return ""
             case let .imported(file, _):
                 return file
+            case let .conflict(sources):
+                return sources.first?.file ?? ""
             }
         }
 
@@ -86,6 +88,18 @@ struct OverviewView: View {
             )
         }
         for domain in enabledDomains {
+            if case let .conflict(sources) = domain.origin {
+                items.append(
+                    OverviewAttentionItem(
+                        id: "\(domain.id)-conflict",
+                        title: domain.domain,
+                        detail: String(localized: "Conflicting directives: \(sources.map(\.label).joined(separator: ", "))."),
+                        systemImage: "doc.badge.ellipsis",
+                        tint: .orange
+                    )
+                )
+                continue
+            }
             guard let result = healthResults[domain.id] else { continue }
             switch result {
             case .active, .disabled:
@@ -149,11 +163,12 @@ struct OverviewView: View {
     private var hasCriticalIssue: Bool {
         guard environmentStatus.isReady else { return true }
         return enabledDomains.contains { domain in
+            if case .conflict = domain.origin { return true }
             switch healthResults[domain.id] {
             case .noAnswer, .failed:
-                true
+                return true
             default:
-                false
+                return false
             }
         }
     }
@@ -514,18 +529,7 @@ struct OverviewView: View {
     private func checkDomainHealth() async {
         isCheckingHealth = true
         let snapshot = domains
-        var collected: [UUID: DomainResolutionTestResult] = [:]
-
-        await withTaskGroup(of: (UUID, DomainResolutionTestResult).self) { group in
-            for domain in snapshot {
-                group.addTask {
-                    (domain.id, await DnsmasqDomainTester().check(domain))
-                }
-            }
-            for await (id, result) in group {
-                collected[id] = result
-            }
-        }
+        let collected = await DomainHealthCheckService().check(snapshot)
 
         guard !Task.isCancelled else { return }
         healthResults = collected

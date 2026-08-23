@@ -3198,6 +3198,78 @@
           }
         }
       }
+    },
+    "1 pending DNS change" : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "1 modifica DNS in sospeso" } } }
+    },
+    "%lld pending DNS changes" : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "%1$lld modifiche DNS in sospeso" } } }
+    },
+    "Add" : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Aggiunta" } } }
+    },
+    "Added %lld imported mappings to pending changes." : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Aggiunti %1$lld mapping importati alle modifiche in sospeso." } } }
+    },
+    "Added one imported mapping to pending changes." : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Aggiunto un mapping importato alle modifiche in sospeso." } } }
+    },
+    "Applied %lld DNS changes and restarted dnsmasq." : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Applicate %1$lld modifiche DNS e riavviato dnsmasq." } } }
+    },
+    "Applied one DNS change and restarted dnsmasq." : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Applicata una modifica DNS e riavviato dnsmasq." } } }
+    },
+    "Apply Changes" : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Applica modifiche" } } }
+    },
+    "Change" : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Modifica" } } }
+    },
+    "Conflict" : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Conflitto" } } }
+    },
+    "Conflict in %lld directives" : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Conflitto in %1$lld direttive" } } }
+    },
+    "Conflicting directives: %@." : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Direttive in conflitto: %1$@." } } }
+    },
+    "Discard" : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Annulla modifiche" } } }
+    },
+    "Discard All" : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Annulla tutto" } } }
+    },
+    "Multiple dnsmasq directives define this domain: %@. Resolve them in the source files first." : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Più direttive dnsmasq definiscono questo dominio: %1$@. Risolvi prima il conflitto nei file sorgente." } } }
+    },
+    "Not Now" : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Non ora" } } }
+    },
+    "Pawxy found conflicting directives for %@ in %@. Resolve the conflict in the source files before editing this domain." : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Pawxy ha trovato direttive in conflitto per %1$@ in %2$@. Risolvi il conflitto nei file sorgente prima di modificare questo dominio." } } }
+    },
+    "Pending" : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "In sospeso" } } }
+    },
+    "Pending DNS changes" : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Modifiche DNS in sospeso" } } }
+    },
+    "Refreshing…" : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Aggiornamento…" } } }
+    },
+    "Remove its dnsmasq directive and managed resolver." : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Rimuovi la direttiva dnsmasq e il resolver gestito." } } }
+    },
+    "Review" : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Rivedi" } } }
+    },
+    "Review everything Pawxy will apply with one administrator authorization and one dnsmasq restart." : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Controlla tutto ciò che Pawxy applicherà con una sola autorizzazione amministratore e un solo riavvio di dnsmasq." } } }
+    },
+    "This domain has unapplied changes. Apply them before testing resolution." : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Questo dominio contiene modifiche non applicate. Applicale prima di verificarne la risoluzione." } } }
     }
   },
   "version" : "1.0"

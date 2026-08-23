@@ -6,10 +6,16 @@
 import SwiftUI
 
 struct DomainsView: View {
-    @ObservedObject var store: DomainStore
+    let domains: [LocalDomain]
+    let storeError: String?
     @Binding var searchText: String
+    let isRefreshing: Bool
     let updatingDomainIDs: Set<UUID>
+    let pendingDomainIDs: Set<UUID>
     let healthCheckRevision: Int
+
+    @State private var healthResults: [UUID: DomainResolutionTestResult] = [:]
+    @State private var testingDomainIDs = Set<UUID>()
 
     let onAdd: () -> Void
     let onRefresh: () -> Void
@@ -22,8 +28,8 @@ struct DomainsView: View {
     let onSetEnabled: (Bool, LocalDomain) -> Void
 
     private var filteredDomains: [LocalDomain] {
-        guard !searchText.isEmpty else { return store.domains }
-        return store.domains.filter {
+        guard !searchText.isEmpty else { return domains }
+        return domains.filter {
             $0.domain.localizedCaseInsensitiveContains(searchText)
                 || $0.address.localizedCaseInsensitiveContains(searchText)
         }
@@ -35,7 +41,7 @@ struct DomainsView: View {
             searchField
             domainContent
 
-            if let error = store.lastError {
+            if let error = storeError {
                 Label(error, systemImage: "exclamationmark.triangle.fill")
                     .font(.caption)
                     .foregroundStyle(.red)
@@ -43,6 +49,9 @@ struct DomainsView: View {
         }
         .padding(24)
         .background(Color(nsColor: .windowBackgroundColor))
+        .task(id: automaticHealthCheckKey) {
+            await checkDomainHealth()
+        }
     }
 
     private var header: some View {
@@ -57,8 +66,16 @@ struct DomainsView: View {
             Spacer()
 
             Button(action: onRefresh) {
-                Label("Refresh", systemImage: "arrow.clockwise")
+                if isRefreshing {
+                    HStack(spacing: 7) {
+                        ProgressView().controlSize(.small)
+                        Text("Refreshing…")
+                    }
+                } else {
+                    Label("Refresh", systemImage: "arrow.clockwise")
+                }
             }
+            .disabled(isRefreshing)
 
             Menu {
                 Button("Import Backup…", systemImage: "square.and.arrow.down", action: onImportBackup)
@@ -130,7 +147,10 @@ struct DomainsView: View {
                         DomainRow(
                             domain: domain,
                             isUpdating: updatingDomainIDs.contains(domain.id),
-                            healthCheckRevision: healthCheckRevision,
+                            isPending: pendingDomainIDs.contains(domain.id),
+                            isTestingResolution: testingDomainIDs.contains(domain.id),
+                            resolutionResult: healthResults[domain.id],
+                            onTestResolution: { testResolution(domain) },
                             onSetEnabled: { onSetEnabled($0, domain) },
                             onShowInFinder: { onShowInFinder(domain) },
                             onRepairResolver: { onRepairResolver(domain) },
@@ -144,20 +164,53 @@ struct DomainsView: View {
             .id(searchText)
         }
     }
+
+    private var automaticHealthCheckKey: String {
+        let domainKey = domains.map {
+            "\($0.id)|\($0.domain)|\($0.address)|\($0.wildcard)|\($0.enabled)"
+        }.joined(separator: ";")
+        return "\(healthCheckRevision)|\(domainKey)|\(pendingDomainIDs.count)"
+    }
+
+    private func checkDomainHealth() async {
+        let testableDomains = domains.filter {
+            guard !pendingDomainIDs.contains($0.id) else { return false }
+            if case .conflict = $0.origin { return false }
+            return true
+        }
+        testingDomainIDs = Set(testableDomains.map(\.id))
+        let results = await DomainHealthCheckService().check(testableDomains)
+        guard !Task.isCancelled else { return }
+        healthResults = results
+        testingDomainIDs.removeAll()
+    }
+
+    private func testResolution(_ domain: LocalDomain) {
+        guard !pendingDomainIDs.contains(domain.id),
+              !testingDomainIDs.contains(domain.id)
+        else { return }
+        testingDomainIDs.insert(domain.id)
+        Task {
+            let result = await DnsmasqDomainTester().check(domain)
+            guard !Task.isCancelled else { return }
+            healthResults[domain.id] = result
+            testingDomainIDs.remove(domain.id)
+        }
+    }
 }
 
 private struct DomainRow: View {
     let domain: LocalDomain
     let isUpdating: Bool
-    let healthCheckRevision: Int
+    let isPending: Bool
+    let isTestingResolution: Bool
+    let resolutionResult: DomainResolutionTestResult?
+    let onTestResolution: () -> Void
     let onSetEnabled: (Bool) -> Void
     let onShowInFinder: () -> Void
     let onRepairResolver: () -> Void
     let onEdit: () -> Void
     let onDelete: () -> Void
-
-    @State private var isTestingResolution = false
-    @State private var resolutionResult: DomainResolutionTestResult?
 
     var body: some View {
         HStack(spacing: 13) {
@@ -183,7 +236,7 @@ private struct DomainRow: View {
             .toggleStyle(.switch)
             .controlSize(.small)
             .fixedSize()
-            .disabled(isUpdating)
+            .disabled(isUpdating || isConflict)
 
             actionMenu
         }
@@ -194,12 +247,6 @@ private struct DomainRow: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(.separator.opacity(0.6), lineWidth: 1)
         }
-        .onChange(of: domain.enabled) { _, _ in
-            resolutionResult = nil
-        }
-        .task(id: automaticTestKey) {
-            await runResolutionTest()
-        }
     }
 
     private var resolutionTestControl: some View {
@@ -209,6 +256,12 @@ private struct DomainRow: View {
                     ProgressView()
                         .controlSize(.small)
                         .frame(width: 14, height: 14)
+                } else if isPending {
+                    Label("Pending", systemImage: "clock.badge")
+                        .foregroundStyle(.blue)
+                } else if isConflict {
+                    Label("Conflict", systemImage: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.orange)
                 } else if let resolutionResult {
                     resolutionLabel(for: resolutionResult)
                 } else {
@@ -219,7 +272,7 @@ private struct DomainRow: View {
             .font(.caption)
         }
         .buttonStyle(.borderless)
-        .disabled(isTestingResolution)
+        .disabled(isTestingResolution || isPending || isConflict)
         .help(resolutionHelpText)
         .fixedSize()
     }
@@ -252,6 +305,12 @@ private struct DomainRow: View {
     }
 
     private var resolutionHelpText: String {
+        if isPending {
+            return String(localized: "This domain has unapplied changes. Apply them before testing resolution.")
+        }
+        if case let .conflict(sources) = domain.origin {
+            return String(localized: "Multiple dnsmasq directives define this domain: \(sources.map(\.label).joined(separator: ", ")). Resolve them in the source files first.")
+        }
         guard let resolutionResult else {
             return String(localized: "Verify this mapping through dnsmasq and the macOS system resolver.")
         }
@@ -276,26 +335,7 @@ private struct DomainRow: View {
     }
 
     private func testResolution() {
-        Task {
-            await runResolutionTest()
-        }
-    }
-
-    private var automaticTestKey: String {
-        [
-            domain.domain,
-            domain.address,
-            String(domain.wildcard),
-            String(domain.enabled),
-            String(healthCheckRevision)
-        ].joined(separator: "|")
-    }
-
-    private func runResolutionTest() async {
-        guard !isTestingResolution else { return }
-        isTestingResolution = true
-        resolutionResult = await DnsmasqDomainTester().check(domain)
-        isTestingResolution = false
+        onTestResolution()
     }
 
     private var domainDetails: some View {
@@ -313,6 +353,7 @@ private struct DomainRow: View {
                 Text("·")
                 Text(domain.origin.label)
                     .lineLimit(1)
+                    .foregroundStyle(isConflict ? .orange : .secondary)
             }
             .font(.caption)
             .foregroundStyle(.secondary)
@@ -330,11 +371,18 @@ private struct DomainRow: View {
                 systemImage: "network.badge.shield.half.filled",
                 action: onRepairResolver
             )
-            .disabled(!domain.enabled || isUpdating || domain.domain.lowercased().hasSuffix(".local"))
+            .disabled(
+                !domain.enabled
+                    || isUpdating
+                    || isConflict
+                    || domain.domain.lowercased().hasSuffix(".local")
+            )
             Divider()
             Button("Edit…", systemImage: "pencil", action: onEdit)
+                .disabled(isConflict)
             Divider()
             Button("Delete…", systemImage: "trash", role: .destructive, action: onDelete)
+                .disabled(isConflict)
         } label: {
             Image(systemName: "ellipsis")
                 .frame(width: 22, height: 22)
@@ -342,5 +390,10 @@ private struct DomainRow: View {
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
         .fixedSize()
+    }
+
+    private var isConflict: Bool {
+        if case .conflict = domain.origin { return true }
+        return false
     }
 }
