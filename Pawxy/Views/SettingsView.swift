@@ -100,7 +100,6 @@ private struct UpdateSettingsView: View {
 }
 
 private struct EnvironmentSettingsView: View {
-    @EnvironmentObject private var helperController: PrivilegedHelperController
     @State private var status = DependencyChecker().check()
 
     var body: some View {
@@ -110,35 +109,15 @@ private struct EnvironmentSettingsView: View {
                 SettingsRequirementRow(name: "dnsmasq", availability: status.dnsmasq)
             }
 
-            Section("Privileged helper") {
-                LabeledContent("System service") {
-                    Label(
-                        helperController.state.title,
-                        systemImage: helperController.state.systemImage
-                    )
-                    .foregroundStyle(helperController.state.isReady ? .green : .orange)
+            Section("Administrative access") {
+                LabeledContent("Authorization") {
+                    Label("On demand", systemImage: "lock.shield.fill")
+                        .foregroundStyle(.blue)
                 }
 
-                Text(helperController.state.detail)
+                Text("Pawxy uses the standard macOS administrator prompt when it modifies dnsmasq, manages system resolvers or restarts the service.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-
-                switch helperController.state {
-                case .requiresApproval:
-                    Button("Open Login Items & Extensions") {
-                        helperController.openApprovalSettings()
-                    }
-                case .notInstalled, .missingFromBundle, .failed:
-                    Button("Install helper") {
-                        helperController.install()
-                    }
-                case .unreachable:
-                    Button("Reinstall helper") {
-                        helperController.reinstall()
-                    }
-                default:
-                    EmptyView()
-                }
             }
 
             Section {
@@ -150,7 +129,7 @@ private struct EnvironmentSettingsView: View {
             }
 
             Section {
-                Text("Pawxy synchronizes mappings directly from dnsmasq. Its signed privileged helper validates paths, backs up changes, tests the complete configuration and restarts the service without AppleScript.")
+                Text("Pawxy synchronizes mappings directly from dnsmasq, validates paths, creates recoverable backups, tests the complete configuration and requests administrator authorization only when required.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -186,6 +165,5 @@ private struct SettingsRequirementRow: View {
 
 #Preview {
     SettingsView()
-        .environmentObject(PrivilegedHelperController.shared)
         .environmentObject(SoftwareUpdateController())
 }

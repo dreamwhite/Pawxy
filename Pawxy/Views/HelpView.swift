@@ -56,9 +56,9 @@ struct HelpView: View {
                 )
 
                 helpSection(
-                    title: "Privileged helper",
-                    systemImage: "checkmark.shield",
-                    text: "Pawxy uses a signed, app-bundled XPC service for protected dnsmasq and resolver changes. macOS asks you to approve it once in Login Items & Extensions; Pawxy never sends arbitrary shell commands to the service."
+                    title: "Administrator authorization",
+                    systemImage: "lock.shield",
+                    text: "Pawxy uses the standard macOS administrator prompt for protected dnsmasq and resolver changes. Nothing persistent is installed, and authorization is requested only when a system change is required."
                 )
 
                 helpSection(

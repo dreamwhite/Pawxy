@@ -26,8 +26,8 @@ sync:
 - and a final resolution test through both dnsmasq and macOS.
 
 Pawxy treats those pieces as one operation. Changes are validated, backed up,
-applied through a constrained privileged helper, and followed by a service
-restart when required.
+applied through the standard macOS administrator authorization prompt, and
+followed by a service restart when required.
 
 ## Use cases
 
@@ -98,8 +98,9 @@ Pawxy detects both `/opt/homebrew` and `/usr/local` installations.
 3. Open the app once.
 4. If macOS blocks the launch, open **System Settings → Privacy & Security** and
    choose **Open Anyway** for Pawxy.
-5. Approve Pawxy under **General → Login Items & Extensions** when macOS asks to
-   enable its privileged helper.
+
+Pawxy asks for administrator authorization only when it needs to apply a DNS
+change, manage a system resolver, or restart dnsmasq.
 
 The manual Gatekeeper step is required only because current builds do not carry
 a notarized Developer ID signature. Sparkle still verifies subsequent update
@@ -160,14 +161,15 @@ For protected changes, the app performs this sequence:
 
 ## Security model
 
-Pawxy uses a LaunchDaemon registered through `SMAppService` and communicates
-with it over XPC. The helper:
+Pawxy does not install a persistent privileged helper. Protected changes use
+the standard macOS administrator authorization dialog and an ephemeral,
+app-generated transaction. Pawxy:
 
-- accepts structured Pawxy operations rather than arbitrary shell commands;
-- verifies the connecting application;
 - permits only supported Homebrew dnsmasq and `/etc/resolver` paths;
 - restricts the number and size of files in a transaction;
-- and validates dnsmasq before completing a change.
+- creates rollback copies before changing files;
+- validates dnsmasq before completing a change;
+- and removes temporary transaction data immediately afterwards.
 
 Ad-hoc signing is suitable for the current community and personal distribution
 model, but it does not provide the first-launch experience of a notarized
@@ -199,9 +201,9 @@ xcodebuild \
   test
 ```
 
-The privileged helper needs macOS approval before a development build can make
-protected DNS changes. Read-only discovery and the Swift test suite do not
-modify the system configuration.
+Read-only discovery and the Swift test suite do not modify system
+configuration. Interactive DNS changes show the standard macOS administrator
+authorization dialog.
 
 ## Updates and releases
 
@@ -218,7 +220,7 @@ Maintainer instructions are available in
 Issues and focused pull requests are welcome. Before submitting a change:
 
 1. explain the dnsmasq or macOS behavior being addressed;
-2. keep privileged operations narrowly scoped;
+2. keep administrator-authorized operations narrowly scoped;
 3. add or update tests for configuration parsing and file transactions;
 4. update both English and Italian String Catalog entries for user-facing text;
 5. verify that the app builds and the `PawxyTests` suite passes.

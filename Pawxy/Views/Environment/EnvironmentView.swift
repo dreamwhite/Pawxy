@@ -6,7 +6,6 @@
 import SwiftUI
 
 struct EnvironmentView: View {
-    @EnvironmentObject private var helperController: PrivilegedHelperController
     let status: DevelopmentEnvironmentStatus
     let discoveredDomainCount: Int
     let showsLegacyConfiguration: Bool
@@ -22,7 +21,7 @@ struct EnvironmentView: View {
         VStack(alignment: .leading, spacing: 22) {
             header
             toolsPanel
-            helperPanel
+            authorizationPanel
             configurationPanel
             Spacer()
         }
@@ -30,46 +29,27 @@ struct EnvironmentView: View {
         .background(Color(nsColor: .windowBackgroundColor))
     }
 
-    private var helperPanel: some View {
-        GroupBox("Secure system access") {
+    private var authorizationPanel: some View {
+        GroupBox("Administrative access") {
             HStack(spacing: 14) {
-                Image(systemName: helperController.state.systemImage)
+                Image(systemName: "lock.shield.fill")
                     .font(.title2)
-                    .foregroundStyle(helperController.state.isReady ? .green : .orange)
+                    .foregroundStyle(.blue)
                     .frame(width: 34)
 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(helperController.state.title)
+                    Text("macOS authorization")
                         .font(.headline)
-                    Text(helperController.state.detail)
+                    Text("Pawxy asks for administrator authorization only when it applies DNS changes or restarts dnsmasq.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
 
                 Spacer()
 
-                if helperController.isWorking || helperController.state == .checking {
-                    ProgressView()
-                        .controlSize(.small)
-                }
-
-                switch helperController.state {
-                case .requiresApproval:
-                    Button("Open System Settings") {
-                        helperController.openApprovalSettings()
-                    }
-                    .buttonStyle(.borderedProminent)
-                case .notInstalled, .missingFromBundle, .failed:
-                    Button("Install helper") {
-                        helperController.install()
-                    }
-                case .unreachable:
-                    Button("Reinstall helper") {
-                        helperController.reinstall()
-                    }
-                default:
-                    EmptyView()
-                }
+                Text("On demand")
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(.secondary)
             }
             .padding(8)
         }

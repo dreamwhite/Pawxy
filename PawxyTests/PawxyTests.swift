@@ -12,33 +12,6 @@ import Testing
 @MainActor
 struct PawxyTests {
 
-    @Test func helperInstallationIdentityTracksBundleAndExecutableChanges() {
-        let baseline = PrivilegedHelperInstallationIdentity.make(
-            bundlePath: "/Applications/Pawxy.app",
-            appExecutable: Data("app-v1".utf8),
-            helperExecutable: Data("helper-v1".utf8)
-        )
-        let identical = PrivilegedHelperInstallationIdentity.make(
-            bundlePath: "/Applications/Pawxy.app",
-            appExecutable: Data("app-v1".utf8),
-            helperExecutable: Data("helper-v1".utf8)
-        )
-        let moved = PrivilegedHelperInstallationIdentity.make(
-            bundlePath: "/Users/example/Desktop/Pawxy.app",
-            appExecutable: Data("app-v1".utf8),
-            helperExecutable: Data("helper-v1".utf8)
-        )
-        let updated = PrivilegedHelperInstallationIdentity.make(
-            bundlePath: "/Applications/Pawxy.app",
-            appExecutable: Data("app-v2".utf8),
-            helperExecutable: Data("helper-v2".utf8)
-        )
-
-        #expect(baseline == identical)
-        #expect(baseline != moved)
-        #expect(baseline != updated)
-    }
-
     @Test func localDomainRoundTripsThroughJSON() throws {
         let domain = LocalDomain(
             domain: "museo.test",
@@ -306,29 +279,10 @@ struct PawxyTests {
         )
     }
 
-    @Test func privilegedHelperRequestRoundTripsThroughJSON() throws {
-        let request = PawxyPrivilegedRequest(
-            operation: .transact(
-                homebrewPrefix: "/opt/homebrew",
-                changes: [
-                    .write(
-                        destination: "/opt/homebrew/etc/dnsmasq.d/example-test.conf",
-                        contents: Data("address=/example.test/127.0.0.1\n".utf8)
-                    ),
-                    .remove(destination: "/private/etc/resolver/old.example.test")
-                ],
-                restartDnsmasq: true
-            )
+    @Test func administratorAuthorizationOnlyAllowsDnsmasqAndResolverPaths() throws {
+        let policy = try #require(
+            AdministratorAuthorizationService.PathPolicy(prefix: "/opt/homebrew")
         )
-
-        let data = try JSONEncoder().encode(request)
-        let decoded = try JSONDecoder().decode(PawxyPrivilegedRequest.self, from: data)
-
-        #expect(decoded == request)
-    }
-
-    @Test func privilegedHelperOnlyAllowsDnsmasqAndResolverPaths() throws {
-        let policy = try #require(PawxyPrivilegedPathPolicy(prefix: "/opt/homebrew"))
 
         #expect(policy.allows("/opt/homebrew/etc/dnsmasq.conf"))
         #expect(policy.allows("/opt/homebrew/etc/dnsmasq.d/example-test.conf"))
@@ -337,33 +291,7 @@ struct PawxyTests {
         #expect(!policy.allows("/opt/homebrew/etc/unrelated.conf"))
         #expect(!policy.allows("/opt/homebrew/etc/dnsmasq.d/nested/example.conf"))
         #expect(!policy.allows("/private/etc/resolver/../sudoers"))
-        #expect(PawxyPrivilegedPathPolicy(prefix: "/tmp/homebrew") == nil)
-    }
-
-    @Test func privilegedHelperFindsItsContainingAppFromAnAbsoluteProcessPath() {
-        let helperURL = URL(
-            fileURLWithPath: "/Applications/Pawxy.app/Contents/Resources/PawxyHelper"
-        )
-
-        #expect(
-            PawxyPrivilegedHelperBundleLayout.containingAppURL(
-                forHelperExecutable: helperURL
-            )?.path == "/Applications/Pawxy.app"
-        )
-        #expect(
-            PawxyPrivilegedHelperBundleLayout.containingAppURL(
-                forHelperExecutable: URL(
-                    fileURLWithPath: "/Applications/Pawxy.app/Contents/MacOS/PawxyHelper"
-                )
-            ) == nil
-        )
-        #expect(
-            PawxyPrivilegedHelperBundleLayout.containingAppURL(
-                forHelperExecutable: URL(
-                    fileURLWithPath: "/Applications/Pawxy.app/Contents/Resources/OtherHelper"
-                )
-            ) == nil
-        )
+        #expect(AdministratorAuthorizationService.PathPolicy(prefix: "/tmp/homebrew") == nil)
     }
 
     @Test func macOSResolverDocumentRoutesDomainsToLocalDnsmasq() {

@@ -11,7 +11,6 @@ import UniformTypeIdentifiers
 
 struct ContentView: View {
     @EnvironmentObject private var store: DomainStore
-    @EnvironmentObject private var helperController: PrivilegedHelperController
 
     @State private var environmentStatus: DevelopmentEnvironmentStatus
     private let dnsmasqManager = DnsmasqConfigurationManager()
@@ -57,7 +56,7 @@ struct ContentView: View {
             }
         } message: {
             if case .imported = deletionCandidate?.origin {
-                Text("This removes the directive from its dnsmasq configuration file through Pawxy’s privileged helper and restarts the service.")
+                Text("This removes the directive from its dnsmasq configuration file, asks for administrator authorization and restarts the service.")
             } else {
                 Text("This action cannot be undone.")
             }
@@ -154,11 +153,6 @@ struct ContentView: View {
             existingDomains: store.domains,
             defaultAddress: defaultIPv4Address
         ) { domain in
-            guard requirePrivilegedHelper() else {
-                throw DnsmasqConfigurationManager.ManagerError.authorizationFailed(
-                    helperController.state.detail
-                )
-            }
             if let existingDomain = presentation.domain {
                 let managedDomain = try await Task.detached {
                     try DnsmasqConfigurationManager().update(existingDomain, with: domain)
@@ -180,11 +174,6 @@ struct ContentView: View {
             filename: presentation.filename,
             existingDomainNames: Set(store.domains.map { $0.domain.lowercased() })
         ) { domains in
-            guard requirePrivilegedHelper() else {
-                throw DnsmasqConfigurationManager.ManagerError.authorizationFailed(
-                    helperController.state.detail
-                )
-            }
             let currentNames = Set(
                 DnsmasqConfigScanner().scan().map { $0.domain.lowercased() }
             )
@@ -226,18 +215,15 @@ struct ContentView: View {
     }
 
     private func showDomainEditor() {
-        guard requirePrivilegedHelper() else { return }
         destination = .domains
         editorPresentation = .add
     }
 
     private func editDomain(_ domain: LocalDomain) {
-        guard requirePrivilegedHelper() else { return }
         editorPresentation = .edit(domain)
     }
 
     private func requestDeletion(_ domain: LocalDomain) {
-        guard requirePrivilegedHelper() else { return }
         deletionCandidate = domain
     }
 
@@ -249,7 +235,6 @@ struct ContentView: View {
     }
 
     private func restartDnsmasq() {
-        guard requirePrivilegedHelper() else { return }
         guard !isPerformingServiceOperation else { return }
         isPerformingServiceOperation = true
         Task {
@@ -267,7 +252,6 @@ struct ContentView: View {
     }
 
     private func migrateLegacyConfiguration() {
-        guard requirePrivilegedHelper() else { return }
         guard !isPerformingServiceOperation else { return }
         isPerformingServiceOperation = true
         Task {
@@ -303,7 +287,6 @@ struct ContentView: View {
     }
 
     private func chooseBackupToImport() {
-        guard requirePrivilegedHelper() else { return }
         refreshMappings()
 
         let panel = NSOpenPanel()
@@ -359,7 +342,6 @@ struct ContentView: View {
     }
 
     private func setDomainEnabled(_ enabled: Bool, domain: LocalDomain) {
-        guard requirePrivilegedHelper() else { return }
         guard !updatingDomainIDs.contains(domain.id),
               store.domains.first(where: { $0.id == domain.id })?.enabled != enabled
         else {
@@ -382,7 +364,6 @@ struct ContentView: View {
     }
 
     private func repairSystemResolver(for domain: LocalDomain) {
-        guard requirePrivilegedHelper() else { return }
         guard !updatingDomainIDs.contains(domain.id) else { return }
 
         updatingDomainIDs.insert(domain.id)
@@ -403,10 +384,6 @@ struct ContentView: View {
     }
 
     private func deleteSelectedDomain() {
-        guard requirePrivilegedHelper() else {
-            deletionCandidate = nil
-            return
-        }
         guard let deletionCandidate else { return }
         self.deletionCandidate = nil
         guard !updatingDomainIDs.contains(deletionCandidate.id) else { return }
@@ -425,14 +402,6 @@ struct ContentView: View {
         }
     }
 
-    private func requirePrivilegedHelper() -> Bool {
-        guard helperController.state.isReady else {
-            destination = .environment
-            configurationError = "\(helperController.state.title). \(helperController.state.detail)"
-            return false
-        }
-        return true
-    }
 }
 
 private enum DomainEditorPresentation: Identifiable {

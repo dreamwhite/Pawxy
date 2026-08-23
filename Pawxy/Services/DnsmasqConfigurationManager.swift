@@ -287,7 +287,7 @@ nonisolated struct DnsmasqConfigurationManager {
     }
 
     func restart() throws {
-        try runPrivileged(.restartDnsmasq(homebrewPrefix: paths.prefix))
+        try runPrivilegedRestart()
     }
 
     private func replaceManagedFile(
@@ -475,25 +475,25 @@ nonisolated struct DnsmasqConfigurationManager {
 
         do {
             var changes = installations.map {
-                PawxyPrivilegedFileChange.write(
+                AdministratorFileChange.write(
                     destination: $0.destination,
                     contents: Data($0.contents.utf8)
                 )
             }
-            changes.append(contentsOf: deletions.map(PawxyPrivilegedFileChange.remove))
+            changes.append(contentsOf: deletions.map(AdministratorFileChange.remove))
 
             for destination in Set(changes.map(\.destination)) {
                 try createRecoverableBackup(of: destination)
             }
-            try runPrivileged(
-                .transact(
-                    homebrewPrefix: paths.prefix,
-                    changes: changes,
-                    restartDnsmasq: restartDnsmasq
-                )
+            try AdministratorAuthorizationService().transact(
+                homebrewPrefix: paths.prefix,
+                changes: changes,
+                restartDnsmasq: restartDnsmasq
             )
         } catch let error as ManagerError {
             throw error
+        } catch let error as AdministratorAuthorizationService.AuthorizationError {
+            throw ManagerError.authorizationFailed(error.localizedDescription)
         } catch {
             throw ManagerError.couldNotWrite(
                 installations.first?.destination ?? deletions.first ?? "dnsmasq configuration",
@@ -527,11 +527,11 @@ nonisolated struct DnsmasqConfigurationManager {
         }
     }
 
-    private func runPrivileged(_ operation: PawxyPrivilegedOperation) throws {
+    private func runPrivilegedRestart() throws {
         do {
-            _ = try PrivilegedHelperClient().perform(operation)
-        } catch let error as PrivilegedHelperClient.ClientError {
-            throw ManagerError.authorizationFailed(error.localizedDescription)
+            try AdministratorAuthorizationService().restartDnsmasq(
+                homebrewPrefix: paths.prefix
+            )
         } catch {
             throw ManagerError.authorizationFailed(error.localizedDescription)
         }
@@ -569,7 +569,7 @@ extension DnsmasqConfigurationManager {
             case let .couldNotBackup(path, detail):
                 return String(localized: "Could not back up \(path): \(detail)")
             case let .authorizationFailed(detail):
-                return String(localized: "The privileged helper operation failed: \(detail)")
+                return String(localized: "The administrator operation failed: \(detail)")
             }
         }
     }

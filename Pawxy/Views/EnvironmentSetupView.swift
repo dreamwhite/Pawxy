@@ -8,34 +8,16 @@
 import SwiftUI
 
 struct AppRootView: View {
-    @EnvironmentObject private var helperController: PrivilegedHelperController
-    @Environment(\.scenePhase) private var scenePhase
     @AppStorage("didCompleteEnvironmentSetup") private var didCompleteSetup = false
     @AppStorage("alwaysShowEnvironmentSetup") private var alwaysShowEnvironmentSetup = false
     @State private var status: DevelopmentEnvironmentStatus?
     @State private var isChecking = false
     @State private var didContinueThisSession = false
-    @State private var didSkipHelperThisSession = false
 
     var body: some View {
         Group {
             if isChecking || status == nil {
                 checkingView
-            } else if let status,
-                      status.isReady,
-                      !helperController.state.isReady,
-                      !didSkipHelperThisSession {
-                PrivilegedHelperSetupView(
-                    state: helperController.state,
-                    isWorking: helperController.isWorking,
-                    onInstall: helperController.install,
-					onReinstall: helperController.reinstall,
-                    onOpenSettings: helperController.openApprovalSettings,
-                    onCheckAgain: helperController.refresh,
-                    onContinueReadOnly: {
-                        didSkipHelperThisSession = true
-                    }
-                )
             } else if let status,
                       status.isReady,
                       didCompleteSetup,
@@ -55,12 +37,6 @@ struct AppRootView: View {
         }
         .task {
             checkEnvironment()
-            helperController.prepareIfNeeded()
-        }
-        .onChange(of: scenePhase) { _, phase in
-            if phase == .active {
-                helperController.prepareIfNeeded()
-            }
         }
     }
 
@@ -82,90 +58,6 @@ struct AppRootView: View {
         isChecking = true
         status = DependencyChecker().check()
         isChecking = false
-    }
-}
-
-private struct PrivilegedHelperSetupView: View {
-    let state: PrivilegedHelperController.State
-    let isWorking: Bool
-    let onInstall: () -> Void
-    let onReinstall: () -> Void
-    let onOpenSettings: () -> Void
-    let onCheckAgain: () -> Void
-    let onContinueReadOnly: () -> Void
-
-    var body: some View {
-        VStack(spacing: 22) {
-            Image(systemName: state.systemImage)
-                .font(.system(size: 34, weight: .semibold))
-                .foregroundStyle(state.isReady ? .green : .blue)
-                .frame(width: 70, height: 70)
-                .background(.blue.opacity(0.12), in: RoundedRectangle(cornerRadius: 18))
-
-            VStack(spacing: 7) {
-                Text("Allow Pawxy to manage DNS")
-                    .font(.largeTitle.bold())
-                Text("Pawxy uses a signed system service to update dnsmasq and macOS resolvers without AppleScript prompts.")
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: 520)
-            }
-
-            HStack(spacing: 14) {
-                Image(systemName: state.systemImage)
-                    .font(.title2)
-                    .foregroundStyle(state.isReady ? .green : .orange)
-                    .frame(width: 34)
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(state.title)
-                        .font(.headline)
-                    Text(state.detail)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                if isWorking || state == .checking {
-                    ProgressView()
-                        .controlSize(.small)
-                }
-            }
-            .padding(16)
-            .background(.background, in: RoundedRectangle(cornerRadius: 14))
-            .overlay {
-                RoundedRectangle(cornerRadius: 14)
-                    .stroke(.separator.opacity(0.6), lineWidth: 1)
-            }
-
-            HStack(spacing: 10) {
-                Button("Continue read-only", action: onContinueReadOnly)
-
-                switch state {
-                case .requiresApproval:
-                    Button("Open System Settings", action: onOpenSettings)
-                        .buttonStyle(.borderedProminent)
-                case .notInstalled, .missingFromBundle, .failed:
-                    Button("Install helper", action: onInstall)
-                        .buttonStyle(.borderedProminent)
-                case .unreachable:
-                    Button("Reinstall helper", action: onReinstall)
-                        .buttonStyle(.borderedProminent)
-                case .checking:
-                    Button("Checking…", action: {})
-                        .buttonStyle(.borderedProminent)
-                        .disabled(true)
-                default:
-                    Button("Check again", action: onCheckAgain)
-                        .buttonStyle(.borderedProminent)
-                }
-            }
-
-            Text("macOS may require one approval in Login Items & Extensions. Pawxy never gives the helper arbitrary shell commands.")
-                .font(.caption)
-                .foregroundStyle(.tertiary)
-        }
-        .padding(38)
-        .frame(minWidth: 680, minHeight: 500)
-        .background(Color(nsColor: .windowBackgroundColor))
     }
 }
 
@@ -234,7 +126,7 @@ private struct EnvironmentSetupView: View {
                 .disabled(!status.isReady)
             }
 
-            Text("This setup check is read-only. DNS changes are performed by Pawxy’s signed privileged helper.")
+            Text("This setup check is read-only. macOS asks for administrator authorization only when Pawxy applies DNS changes.")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
         }

@@ -2401,6 +2401,16 @@
         }
       }
     },
+    "Remove helper" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuovi helper"
+          }
+        }
+      }
+    },
     "Repair Missing Resolvers…" : {
       "localizations" : {
         "it" : {
@@ -2788,6 +2798,26 @@
         }
       }
     },
+    "This build is not signed with a development identity. Build Pawxy with signing enabled before installing the privileged helper." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa build non è firmata con un'identità di sviluppo. Attiva la firma e ricompila Pawxy prima di installare l'helper privilegiato."
+          }
+        }
+      }
+    },
+    "macOS rejected this helper's signature. Run the app from a normally signed Xcode Debug build; ad-hoc or unsigned exports cannot install a privileged helper." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS ha rifiutato la firma dell'helper. Avvia l'app da una build Debug firmata normalmente da Xcode: le esportazioni ad-hoc o non firmate non possono installare un helper privilegiato."
+          }
+        }
+      }
+    },
     "The Environment screen shows where Homebrew and dnsmasq were found. Use Check again after installing or updating either tool." : {
       "localizations" : {
         "it" : {
@@ -3095,6 +3125,69 @@
           }
         }
       }
+    },
+    "Administrative access" : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Accesso amministrativo" } } }
+    },
+    "Administrator authorization" : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Autorizzazione amministratore" } } }
+    },
+    "Pawxy uses the standard macOS administrator prompt for protected dnsmasq and resolver changes. Nothing persistent is installed, and authorization is requested only when a system change is required." : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Pawxy usa la richiesta amministratore standard di macOS per le modifiche protette a dnsmasq e ai resolver. Non viene installato nulla di persistente e l'autorizzazione è richiesta solo quando serve una modifica di sistema." } } }
+    },
+    "Administrator authorization was cancelled." : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "L'autorizzazione amministratore è stata annullata." } } }
+    },
+    "A destination appears more than once in the administrator operation." : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Una destinazione compare più volte nell'operazione amministrativa." } } }
+    },
+    "Authorization" : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Autorizzazione" } } }
+    },
+    "macOS authorization" : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Autorizzazione macOS" } } }
+    },
+    "On demand" : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Su richiesta" } } }
+    },
+    "Pawxy asks for administrator authorization only when it applies DNS changes or restarts dnsmasq." : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Pawxy richiede l'autorizzazione amministratore solo quando applica modifiche DNS o riavvia dnsmasq." } } }
+    },
+    "Pawxy could not request administrator authorization: %@" : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Pawxy non ha potuto richiedere l'autorizzazione amministratore: %1$@" } } }
+    },
+    "Pawxy refused to modify the unsupported path %@." : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Pawxy ha rifiutato di modificare il percorso non supportato %1$@." } } }
+    },
+    "Pawxy synchronizes mappings directly from dnsmasq, validates paths, creates recoverable backups, tests the complete configuration and requests administrator authorization only when required." : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Pawxy sincronizza i mapping direttamente da dnsmasq, convalida i percorsi, crea backup recuperabili, verifica l'intera configurazione e richiede l'autorizzazione amministratore solo quando necessario." } } }
+    },
+    "Pawxy uses the standard macOS administrator prompt when it modifies dnsmasq, manages system resolvers or restarts the service." : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Pawxy usa la richiesta amministratore standard di macOS quando modifica dnsmasq, gestisce i resolver di sistema o riavvia il servizio." } } }
+    },
+    "Requested only when applying DNS changes" : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Richiesta solo quando vengono applicate modifiche DNS" } } }
+    },
+    "Testing dnsmasq and system resolvers." : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Verifica di dnsmasq e dei resolver di sistema." } } }
+    },
+    "The administrator operation is empty or too large." : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "L'operazione amministrativa è vuota o troppo grande." } } }
+    },
+    "The administrator operation failed." : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "L'operazione amministrativa non è riuscita." } } }
+    },
+    "The administrator operation failed: %@" : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "L'operazione amministrativa non è riuscita: %1$@" } } }
+    },
+    "The configuration contents are not valid UTF-8." : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Il contenuto della configurazione non è UTF-8 valido." } } }
+    },
+    "This removes the directive from its dnsmasq configuration file, asks for administrator authorization and restarts the service." : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Questa operazione rimuove la direttiva dal relativo file di configurazione dnsmasq, richiede l'autorizzazione amministratore e riavvia il servizio." } } }
+    },
+    "This setup check is read-only. macOS asks for administrator authorization only when Pawxy applies DNS changes." : {
+      "localizations" : { "it" : { "stringUnit" : { "state" : "translated", "value" : "Questa verifica è in sola lettura. macOS richiede l'autorizzazione amministratore solo quando Pawxy applica modifiche DNS." } } }
     },
     "View Issues" : {
       "localizations" : {

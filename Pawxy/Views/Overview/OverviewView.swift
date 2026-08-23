@@ -6,8 +6,6 @@
 import SwiftUI
 
 struct OverviewView: View {
-    @EnvironmentObject private var helperController: PrivilegedHelperController
-
     let domains: [LocalDomain]
     let environmentStatus: DevelopmentEnvironmentStatus
     let onShowDomains: () -> Void
@@ -87,18 +85,6 @@ struct OverviewView: View {
                 )
             )
         }
-        if helperController.state != .checking && !helperController.state.isReady {
-            items.append(
-                OverviewAttentionItem(
-                    id: "helper",
-                    title: helperController.state.title,
-                    detail: helperController.state.detail,
-                    systemImage: helperController.state.systemImage,
-                    tint: .orange
-                )
-            )
-        }
-
         for domain in enabledDomains {
             guard let result = healthResults[domain.id] else { continue }
             switch result {
@@ -388,10 +374,10 @@ struct OverviewView: View {
                 )
                 Divider()
                 OverviewEnvironmentRow(
-                    title: "Privileged helper",
-                    detail: helperController.state.title,
-                    isReady: helperController.state.isReady,
-                    isChecking: helperController.state == .checking
+                    title: "Authorization",
+                    detail: String(localized: "Requested only when applying DNS changes"),
+                    isReady: true,
+                    isChecking: false
                 )
             }
             .frame(minHeight: 170, alignment: .top)
@@ -484,10 +470,10 @@ struct OverviewView: View {
     }
 
     private var healthPresentation: OverviewHealthPresentation {
-        if isCheckingHealth || helperController.state == .checking {
+        if isCheckingHealth {
             return OverviewHealthPresentation(
                 title: String(localized: "Checking local DNS…"),
-                detail: String(localized: "Testing dnsmasq, system resolvers and secure access."),
+                detail: String(localized: "Testing dnsmasq and system resolvers."),
                 systemImage: "arrow.trianglehead.2.clockwise.rotate.90",
                 tint: .blue
             )

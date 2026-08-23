@@ -9,7 +9,6 @@ import SwiftUI
 struct PawxyMenuBarView: View {
     @Environment(\.openWindow) private var openWindow
     @EnvironmentObject private var store: DomainStore
-    @EnvironmentObject private var helperController: PrivilegedHelperController
 
     @State private var environmentStatus = DependencyChecker().check()
     @State private var healthResults: [UUID: DomainResolutionTestResult] = [:]
@@ -46,7 +45,6 @@ struct PawxyMenuBarView: View {
             } label: {
                 Label("Add Domain…", systemImage: "plus")
             }
-            .disabled(!helperController.state.isReady)
 
             Button {
                 Task { await refreshAndCheck() }
@@ -66,7 +64,7 @@ struct PawxyMenuBarView: View {
                     systemImage: "arrow.trianglehead.2.clockwise.rotate.90"
                 )
             }
-            .disabled(isBusy || !environmentStatus.isReady || !helperController.state.isReady)
+            .disabled(isBusy || !environmentStatus.isReady)
 
             if attentionCount > 0 || !resolverRepairCandidates.isEmpty {
                 Divider()
@@ -88,7 +86,7 @@ struct PawxyMenuBarView: View {
                             systemImage: "wrench.and.screwdriver"
                         )
                     }
-                    .disabled(isBusy || !helperController.state.isReady)
+                    .disabled(isBusy)
                 }
             }
 
@@ -155,9 +153,6 @@ struct PawxyMenuBarView: View {
         if !environmentStatus.isReady {
             return String(localized: "Environment needs attention")
         }
-        if !helperController.state.isReady {
-            return String(localized: "Pawxy is running read-only")
-        }
         if attentionCount > 0 {
             return attentionCount == 1
                 ? String(localized: "1 DNS issue found")
@@ -177,7 +172,7 @@ struct PawxyMenuBarView: View {
         if isChecking {
             return "arrow.clockwise"
         }
-        if !environmentStatus.isReady || !helperController.state.isReady || attentionCount > 0 {
+        if !environmentStatus.isReady || attentionCount > 0 {
             return "exclamationmark.triangle.fill"
         }
         return "checkmark.circle.fill"
@@ -241,7 +236,7 @@ struct PawxyMenuBarView: View {
     }
 
     private func restartDnsmasq() {
-        guard !isBusy, helperController.state.isReady else { return }
+        guard !isBusy else { return }
         isRestarting = true
         activityMessage = nil
 
@@ -262,7 +257,7 @@ struct PawxyMenuBarView: View {
 
     private func repairMissingResolvers() {
         let candidates = resolverRepairCandidates
-        guard !candidates.isEmpty, !isBusy, helperController.state.isReady else { return }
+        guard !candidates.isEmpty, !isBusy else { return }
         isRepairingResolvers = true
         activityMessage = nil
 

@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A10000000000000000000002 /* PawxyHelper in Embed Pawxy Helper */ = {isa = PBXBuildFile; fileRef = A10000000000000000000003 /* PawxyHelper */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		A10000000000000000000004 /* PawxyHelper/com.dreamcorp.Pawxy.Helper.plist in LaunchDaemons */ = {isa = PBXBuildFile; fileRef = A10000000000000000000005 /* PawxyHelper/com.dreamcorp.Pawxy.Helper.plist */; };
 		A20000000000000000000001 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = A20000000000000000000003 /* Sparkle */; };
 /* End PBXBuildFile section */
 
@@ -27,46 +25,12 @@
 			remoteGlobalIDString = 2CB32B233039A34500D18FC4;
 			remoteInfo = Pawxy;
 		};
-		A10000000000000000000001 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2CB32B1C3039A34500D18FC4 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = A10000000000000000000010;
-			remoteInfo = PawxyHelper;
-		};
 /* End PBXContainerItemProxy section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		A10000000000000000000006 /* Embed Pawxy Helper */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 7;
-			files = (
-				A10000000000000000000002 /* PawxyHelper in Embed Pawxy Helper */,
-			);
-			name = "Embed Pawxy Helper";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A10000000000000000000007 /* LaunchDaemons */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = Contents/Library/LaunchDaemons;
-			dstSubfolderSpec = 1;
-			files = (
-				A10000000000000000000004 /* PawxyHelper/com.dreamcorp.Pawxy.Helper.plist in LaunchDaemons */,
-			);
-			name = LaunchDaemons;
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		2CB32B243039A34500D18FC4 /* Pawxy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Pawxy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2CB32B313039A34600D18FC4 /* PawxyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PawxyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2CB32B3B3039A34600D18FC4 /* PawxyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PawxyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		A10000000000000000000003 /* PawxyHelper */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PawxyHelper; sourceTree = BUILT_PRODUCTS_DIR; };
-		A10000000000000000000005 /* PawxyHelper/com.dreamcorp.Pawxy.Helper.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PawxyHelper/com.dreamcorp.Pawxy.Helper.plist; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -83,16 +47,6 @@
 		2CB32B3E3039A34600D18FC4 /* PawxyUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = PawxyUITests;
-			sourceTree = "<group>";
-		};
-		A10000000000000000000008 /* PawxyHelper */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = PawxyHelper;
-			sourceTree = "<group>";
-		};
-		A10000000000000000000009 /* PawxyShared */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = PawxyShared;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -120,13 +74,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		A10000000000000000000011 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -134,12 +81,9 @@
 			isa = PBXGroup;
 			children = (
 				2CB32B263039A34500D18FC4 /* Pawxy */,
-				A10000000000000000000008 /* PawxyHelper */,
-				A10000000000000000000009 /* PawxyShared */,
 				2CB32B343039A34600D18FC4 /* PawxyTests */,
 				2CB32B3E3039A34600D18FC4 /* PawxyUITests */,
 				2CB32B253039A34500D18FC4 /* Products */,
-				2CB32CD0303A272700D18FC4 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -147,19 +91,10 @@
 			isa = PBXGroup;
 			children = (
 				2CB32B243039A34500D18FC4 /* Pawxy.app */,
-				A10000000000000000000003 /* PawxyHelper */,
 				2CB32B313039A34600D18FC4 /* PawxyTests.xctest */,
 				2CB32B3B3039A34600D18FC4 /* PawxyUITests.xctest */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		2CB32CD0303A272700D18FC4 /* Recovered References */ = {
-			isa = PBXGroup;
-			children = (
-				A10000000000000000000005 /* PawxyHelper/com.dreamcorp.Pawxy.Helper.plist */,
-			);
-			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -172,17 +107,13 @@
 				2CB32B203039A34500D18FC4 /* Sources */,
 				2CB32B213039A34500D18FC4 /* Frameworks */,
 				2CB32B223039A34500D18FC4 /* Resources */,
-				A10000000000000000000006 /* Embed Pawxy Helper */,
-				A10000000000000000000007 /* LaunchDaemons */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				A10000000000000000000014 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				2CB32B263039A34500D18FC4 /* Pawxy */,
-				A10000000000000000000009 /* PawxyShared */,
 			);
 			name = Pawxy;
 			packageProductDependencies = (
@@ -238,28 +169,6 @@
 			productReference = 2CB32B3B3039A34600D18FC4 /* PawxyUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
-		A10000000000000000000010 /* PawxyHelper */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = A10000000000000000000012 /* Build configuration list for PBXNativeTarget "PawxyHelper" */;
-			buildPhases = (
-				A10000000000000000000013 /* Sources */,
-				A10000000000000000000011 /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				A10000000000000000000008 /* PawxyHelper */,
-				A10000000000000000000009 /* PawxyShared */,
-			);
-			name = PawxyHelper;
-			packageProductDependencies = (
-			);
-			productName = PawxyHelper;
-			productReference = A10000000000000000000003 /* PawxyHelper */;
-			productType = "com.apple.product-type.tool";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -280,9 +189,6 @@
 					2CB32B3A3039A34600D18FC4 = {
 						CreatedOnToolsVersion = 26.6;
 						TestTargetID = 2CB32B233039A34500D18FC4;
-					};
-					A10000000000000000000010 = {
-						CreatedOnToolsVersion = 26.6;
 					};
 				};
 			};
@@ -305,7 +211,6 @@
 			projectRoot = "";
 			targets = (
 				2CB32B233039A34500D18FC4 /* Pawxy */,
-				A10000000000000000000010 /* PawxyHelper */,
 				2CB32B303039A34600D18FC4 /* PawxyTests */,
 				2CB32B3A3039A34600D18FC4 /* PawxyUITests */,
 			);
@@ -358,13 +263,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		A10000000000000000000013 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -377,11 +275,6 @@
 			isa = PBXTargetDependency;
 			target = 2CB32B233039A34500D18FC4 /* Pawxy */;
 			targetProxy = 2CB32B3C3039A34600D18FC4 /* PBXContainerItemProxy */;
-		};
-		A10000000000000000000014 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = A10000000000000000000010 /* PawxyHelper */;
-			targetProxy = A10000000000000000000001 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -442,7 +335,6 @@
 				MACOSX_DEPLOYMENT_TARGET = 26.5;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -499,6 +391,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 26.5;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
 			};
@@ -576,8 +469,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 4;
+				DEVELOPMENT_TEAM = TMXBVY5AMJ;
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 26.5;
 				MARKETING_VERSION = 1.2.0;
@@ -596,8 +491,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 4;
+				DEVELOPMENT_TEAM = TMXBVY5AMJ;
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 26.5;
 				MARKETING_VERSION = 1.2.0;
@@ -617,6 +514,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 4;
+				DEVELOPMENT_TEAM = TMXBVY5AMJ;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.dreamcorp.PawxyUITests;
@@ -635,6 +533,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 4;
+				DEVELOPMENT_TEAM = TMXBVY5AMJ;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.dreamcorp.PawxyUITests;
@@ -645,38 +544,6 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TEST_TARGET_NAME = Pawxy;
-			};
-			name = Release;
-		};
-		A10000000000000000000015 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
-				DEVELOPMENT_TEAM = TMXBVY5AMJ;
-				MACOSX_DEPLOYMENT_TARGET = 26.5;
-				MARKETING_VERSION = 1.2.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.dreamcorp.Pawxy.Helper;
-				PRODUCT_NAME = PawxyHelper;
-				SKIP_INSTALL = YES;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_VERSION = 5.0;
-			};
-			name = Debug;
-		};
-		A10000000000000000000016 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
-				DEVELOPMENT_TEAM = TMXBVY5AMJ;
-				MACOSX_DEPLOYMENT_TARGET = 26.5;
-				MARKETING_VERSION = 1.2.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.dreamcorp.Pawxy.Helper;
-				PRODUCT_NAME = PawxyHelper;
-				SKIP_INSTALL = YES;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
@@ -715,15 +582,6 @@
 			buildConfigurations = (
 				2CB32B4C3039A34600D18FC4 /* Debug */,
 				2CB32B4D3039A34600D18FC4 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		A10000000000000000000012 /* Build configuration list for PBXNativeTarget "PawxyHelper" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				A10000000000000000000015 /* Debug */,
-				A10000000000000000000016 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
