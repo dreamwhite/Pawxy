@@ -1,0 +1,46 @@
+name: Pawxy CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: pawxy-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-build:
+    runs-on: macos-26
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+
+      - name: Resolve Swift packages
+        run: |
+          xcodebuild -resolvePackageDependencies \
+            -project Pawxy.xcodeproj \
+            -scheme Pawxy
+
+      - name: Run unit tests
+        run: |
+          xcodebuild \
+            -project Pawxy.xcodeproj \
+            -scheme Pawxy \
+            -configuration Debug \
+            -destination "platform=macOS" \
+            CODE_SIGNING_ALLOWED=NO \
+            -only-testing:PawxyTests \
+            test
+
+      - name: Build universal release
+        run: |
+          xcodebuild \
+            -project Pawxy.xcodeproj \
+            -scheme Pawxy \
+            -configuration Release \
+            -destination "generic/platform=macOS" \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="-" \
+            DEVELOPMENT_TEAM="" \
+            build
