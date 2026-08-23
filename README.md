@@ -16,7 +16,7 @@
 <p align="center">
   <a href="https://github.com/dreamwhite/Pawxy/releases/latest"><img src="https://img.shields.io/github/v/release/dreamwhite/Pawxy?display_name=tag&sort=semver&style=flat-square" alt="Latest release"></a>
   <a href="https://github.com/dreamwhite/Pawxy/actions/workflows/release.yml"><img src="https://img.shields.io/github/actions/workflow/status/dreamwhite/Pawxy/release.yml?branch=main&style=flat-square&label=release" alt="Release workflow"></a>
-  <img src="https://img.shields.io/badge/macOS-26.5%2B-111111?style=flat-square&logo=apple" alt="macOS 26.5 or later">
+  <img src="https://img.shields.io/badge/macOS-14%2B-111111?style=flat-square&logo=apple" alt="macOS 14 or later">
   <img src="https://img.shields.io/badge/Swift-5-F05138?style=flat-square&logo=swift&logoColor=white" alt="Swift 5">
 </p>
 
@@ -95,13 +95,20 @@ managed `.conf` file per new domain.
 - One readable dnsmasq configuration file per Pawxy-managed domain.
 - Exact-domain and domain-plus-subdomains coverage.
 - Reviewable pending changes applied with one authorization and one restart.
+- Pending changes survive application restarts until they are applied or discarded.
 - Explicit conflict reporting for duplicate dnsmasq directives.
+- Guided conflict resolution that keeps one selected directive and removes duplicates.
 - Safe editing of shared `address` directives without dropping sibling domains.
 - Managed `/etc/resolver` entries for enabled domains.
 - Enable, disable, edit, and delete operations that update the real dnsmasq
   configuration.
 - Full configuration validation before dnsmasq is restarted.
 - Per-domain resolution health checks.
+- IPv4 and IPv6 mappings with normalized address comparison.
+- Bulk enable, disable, test, and delete actions.
+- Automatic monitoring of external dnsmasq configuration changes.
+- Runtime checks for port 53, `dnsmasq --test`, and the managed `dnsmasq.d` include.
+- Local activity history, privacy-conscious diagnostics, and recoverable snapshots.
 - Finder access to the source configuration file.
 - Portable JSON backup and restore.
 - Native English and Italian localizations using Xcode String Catalogs.
@@ -109,7 +116,7 @@ managed `.conf` file per new domain.
 
 ## Requirements
 
-- macOS 26.5 or later.
+- macOS 14 Sonoma or later.
 - [Homebrew](https://brew.sh).
 - dnsmasq installed through Homebrew.
 
@@ -120,6 +127,12 @@ brew install dnsmasq
 ```
 
 Pawxy detects both `/opt/homebrew` and `/usr/local` installations.
+
+The Environment screen distinguishes between installed tools and an actually
+operational DNS stack. It verifies the running service, validates the active
+configuration, and checks that `dnsmasq.conf` includes the managed
+`dnsmasq.d` directory. A missing include can be repaired through the same
+reviewed administrator authorization flow used for DNS changes.
 
 ## Installing a release
 
@@ -150,7 +163,7 @@ coverage, state, and resolution health.
 Choose **Add domain** or press <kbd>⌘</kbd><kbd>N</kbd>, then provide:
 
 - the development domain;
-- its IPv4 address;
+- its IPv4 or IPv6 address;
 - exact-domain or subdomain coverage;
 - and its initial enabled state.
 
@@ -170,6 +183,9 @@ The change first appears in the pending-changes bar. Choose **Review** to inspec
 the complete batch, then **Apply Changes**. Pawxy creates the corresponding
 macOS resolvers, validates the complete configuration, asks for administrator
 authorization once, and restarts dnsmasq once.
+
+Pending changes are stored in Pawxy's Application Support directory, so closing
+and reopening the app does not lose an unfinished batch.
 
 ### Test a domain
 
@@ -199,6 +215,14 @@ For protected changes, the app performs this sequence:
 7. run `dnsmasq --test` against the complete configuration;
 8. restore the previous files if validation fails;
 9. restart the Homebrew dnsmasq service once after a successful batch.
+
+Before applying a transaction, Pawxy stores a manifest-backed configuration
+snapshot. The latest snapshot can be restored from **Environment**, including
+files that were newly created or deleted by the transaction.
+
+Pawxy also watches the active root configuration and `dnsmasq.d` directory.
+Changes made by another editor are discovered automatically without requiring a
+manual refresh.
 
 ## Security model
 
@@ -245,6 +269,9 @@ xcodebuild \
 Read-only discovery and the Swift test suite do not modify system
 configuration. Interactive DNS changes show the standard macOS administrator
 authorization dialog.
+
+GitHub Actions runs the unit suite and a universal Release build for every push
+to `main` and for every pull request.
 
 ## Updates and releases
 
