@@ -9,6 +9,7 @@ enum SidebarDestination: String, Hashable {
     case overview
     case domains
     case environment
+    case activity
 }
 
 struct PawxySidebar: View {
@@ -28,6 +29,9 @@ struct PawxySidebar: View {
 
                 Label("Environment", systemImage: "wrench.and.screwdriver")
                     .tag(SidebarDestination.environment)
+
+                Label("Activity", systemImage: "clock.arrow.circlepath")
+                    .tag(SidebarDestination.activity)
             }
         }
         .listStyle(.sidebar)

@@ -16,6 +16,8 @@ struct DomainsView: View {
 
     @State private var healthResults: [UUID: DomainResolutionTestResult] = [:]
     @State private var testingDomainIDs = Set<UUID>()
+    @State private var selectedDomainIDs = Set<UUID>()
+    @State private var showsBulkDeleteConfirmation = false
 
     let onAdd: () -> Void
     let onRefresh: () -> Void
@@ -23,9 +25,12 @@ struct DomainsView: View {
     let onExportBackup: () -> Void
     let onShowInFinder: (LocalDomain) -> Void
     let onRepairResolver: (LocalDomain) -> Void
+    let onResolveConflict: (LocalDomain) -> Void
     let onEdit: (LocalDomain) -> Void
     let onDelete: (LocalDomain) -> Void
     let onSetEnabled: (Bool, LocalDomain) -> Void
+    let onSetEnabledMany: (Bool, [LocalDomain]) -> Void
+    let onDeleteMany: ([LocalDomain]) -> Void
 
     private var filteredDomains: [LocalDomain] {
         guard !searchText.isEmpty else { return domains }
@@ -39,6 +44,9 @@ struct DomainsView: View {
         VStack(alignment: .leading, spacing: 18) {
             header
             searchField
+            if !selectedDomainIDs.isEmpty {
+                bulkActions
+            }
             domainContent
 
             if let error = storeError {
@@ -51,6 +59,18 @@ struct DomainsView: View {
         .background(Color(nsColor: .windowBackgroundColor))
         .task(id: automaticHealthCheckKey) {
             await checkDomainHealth()
+        }
+        .confirmationDialog(
+            "Delete the selected domains?",
+            isPresented: $showsBulkDeleteConfirmation
+        ) {
+            Button("Delete \(selectedDomains.count) Domains", role: .destructive) {
+                onDeleteMany(selectedDomains)
+                selectedDomainIDs.removeAll()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("The deletions will be added to pending changes for review.")
         }
     }
 
@@ -110,6 +130,62 @@ struct DomainsView: View {
         }
     }
 
+    private var selectedDomains: [LocalDomain] {
+        domains.filter { selectedDomainIDs.contains($0.id) }
+    }
+
+    private var editableSelectedDomains: [LocalDomain] {
+        selectedDomains.filter {
+            if case .conflict = $0.origin { return false }
+            return true
+        }
+    }
+
+    private var bulkActions: some View {
+        HStack(spacing: 10) {
+            Label(
+                "\(selectedDomainIDs.count) selected",
+                systemImage: "checkmark.circle.fill"
+            )
+            .font(.callout.weight(.semibold))
+
+            Spacer()
+
+            Button("Test") {
+                for domain in editableSelectedDomains {
+                    testResolution(domain)
+                }
+            }
+            .disabled(editableSelectedDomains.isEmpty)
+
+            Button("Enable") {
+                onSetEnabledMany(true, editableSelectedDomains)
+            }
+            .disabled(editableSelectedDomains.isEmpty)
+
+            Button("Disable") {
+                onSetEnabledMany(false, editableSelectedDomains)
+            }
+            .disabled(editableSelectedDomains.isEmpty)
+
+            Button("Delete…", role: .destructive) {
+                showsBulkDeleteConfirmation = true
+            }
+            .disabled(editableSelectedDomains.isEmpty)
+
+            Button("Clear Selection") {
+                selectedDomainIDs.removeAll()
+            }
+        }
+        .padding(.horizontal, 13)
+        .frame(height: 42)
+        .background(.blue.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+        .overlay {
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(.blue.opacity(0.25), lineWidth: 1)
+        }
+    }
+
     private var resultCountText: String {
         filteredDomains.count == 1
             ? String(localized: "1 result")
@@ -146,14 +222,23 @@ struct DomainsView: View {
                     ForEach(filteredDomains) { domain in
                         DomainRow(
                             domain: domain,
+                            isSelected: selectedDomainIDs.contains(domain.id),
                             isUpdating: updatingDomainIDs.contains(domain.id),
                             isPending: pendingDomainIDs.contains(domain.id),
                             isTestingResolution: testingDomainIDs.contains(domain.id),
                             resolutionResult: healthResults[domain.id],
                             onTestResolution: { testResolution(domain) },
+                            onToggleSelection: {
+                                if selectedDomainIDs.contains(domain.id) {
+                                    selectedDomainIDs.remove(domain.id)
+                                } else {
+                                    selectedDomainIDs.insert(domain.id)
+                                }
+                            },
                             onSetEnabled: { onSetEnabled($0, domain) },
                             onShowInFinder: { onShowInFinder(domain) },
                             onRepairResolver: { onRepairResolver(domain) },
+                            onResolveConflict: { onResolveConflict(domain) },
                             onEdit: { onEdit(domain) },
                             onDelete: { onDelete(domain) }
                         )
@@ -201,19 +286,28 @@ struct DomainsView: View {
 
 private struct DomainRow: View {
     let domain: LocalDomain
+    let isSelected: Bool
     let isUpdating: Bool
     let isPending: Bool
     let isTestingResolution: Bool
     let resolutionResult: DomainResolutionTestResult?
     let onTestResolution: () -> Void
+    let onToggleSelection: () -> Void
     let onSetEnabled: (Bool) -> Void
     let onShowInFinder: () -> Void
     let onRepairResolver: () -> Void
+    let onResolveConflict: () -> Void
     let onEdit: () -> Void
     let onDelete: () -> Void
 
     var body: some View {
         HStack(spacing: 13) {
+            Button(action: onToggleSelection) {
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(isSelected ? Color.blue : Color.secondary.opacity(0.45))
+            }
+            .buttonStyle(.borderless)
+
             Image(systemName: domain.wildcard ? "network" : "globe")
                 .foregroundStyle(domain.enabled ? .blue : .secondary)
                 .frame(width: 24, height: 24)
@@ -245,7 +339,12 @@ private struct DomainRow: View {
         .background(.background, in: RoundedRectangle(cornerRadius: 12))
         .overlay {
             RoundedRectangle(cornerRadius: 12)
-                .stroke(.separator.opacity(0.6), lineWidth: 1)
+                .stroke(
+                    isSelected
+                        ? Color.blue.opacity(0.65)
+                        : Color(nsColor: .separatorColor).opacity(0.6),
+                    lineWidth: 1
+                )
         }
     }
 
@@ -321,7 +420,7 @@ private struct DomainRow: View {
         case .disabled:
             return String(localized: "This mapping is disabled. Enable it before testing resolution.")
         case let .noAnswer(hostname):
-            return String(localized: "dnsmasq returned no IPv4 address for \(hostname). Click to test again.")
+            return String(localized: "dnsmasq returned no IP address for \(hostname). Click to test again.")
         case let .notRouted(hostname, expected):
             return String(localized: "dnsmasq resolves \(hostname) to \(expected), but macOS is not routing the domain to dnsmasq. Use Repair system resolver, then test again.")
         case let .mdnsConflict(domain):
@@ -362,6 +461,14 @@ private struct DomainRow: View {
 
     private var actionMenu: some View {
         Menu {
+            if isConflict {
+                Button(
+                    "Resolve Conflict…",
+                    systemImage: "checkmark.shield",
+                    action: onResolveConflict
+                )
+                Divider()
+            }
             if case .imported = domain.origin {
                 Button("Show in Finder", systemImage: "folder", action: onShowInFinder)
                 Divider()

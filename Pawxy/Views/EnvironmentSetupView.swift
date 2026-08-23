@@ -19,7 +19,7 @@ struct AppRootView: View {
             if isChecking || status == nil {
                 checkingView
             } else if let status,
-                      status.isReady,
+                      status.hasRequiredTools,
                       didCompleteSetup,
                       (!alwaysShowEnvironmentSetup || didContinueThisSession) {
                 ContentView(environmentStatus: status)
@@ -55,9 +55,14 @@ struct AppRootView: View {
     }
 
     private func checkEnvironment() {
+        guard !isChecking else { return }
         isChecking = true
-        status = DependencyChecker().check()
-        isChecking = false
+        Task {
+            status = await Task.detached(priority: .userInitiated) {
+                DependencyChecker().check()
+            }.value
+            isChecking = false
+        }
     }
 }
 
@@ -123,7 +128,7 @@ private struct EnvironmentSetupView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)
-                .disabled(!status.isReady)
+                .disabled(!status.hasRequiredTools)
             }
 
             Text("This setup check is read-only. macOS asks for administrator authorization only when Pawxy applies DNS changes.")
@@ -156,6 +161,16 @@ private struct EnvironmentSetupView: View {
                     .padding(.vertical, 8)
                     .background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
             }
+        } else {
+            VStack(alignment: .leading, spacing: 6) {
+                Label(status.service.detail, systemImage: status.service.systemImage)
+                Label(status.configuration.detail, systemImage: status.configuration.systemImage)
+                Label(status.managedDirectory.detail, systemImage: status.managedDirectory.systemImage)
+                Text("Continue to open Environment, where Pawxy can repair the managed include or restart dnsmasq.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .font(.callout)
         }
     }
 }

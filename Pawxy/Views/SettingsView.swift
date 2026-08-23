@@ -17,7 +17,7 @@ struct SettingsView: View {
         TabView {
             Form {
                 Section("New domains") {
-                    TextField("Default IPv4 address", text: $defaultIPv4Address)
+                    TextField("Default IP address", text: $defaultIPv4Address)
                     Text("Pawxy domains cover the domain and its subdomains using a dnsmasq address directive.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -101,12 +101,26 @@ private struct UpdateSettingsView: View {
 
 private struct EnvironmentSettingsView: View {
     @State private var status = DependencyChecker().check()
+    @State private var isChecking = false
 
     var body: some View {
         Form {
             Section("Local tools") {
                 SettingsRequirementRow(name: "Homebrew", availability: status.homebrew)
                 SettingsRequirementRow(name: "dnsmasq", availability: status.dnsmasq)
+            }
+
+
+            Section("Runtime health") {
+                LabeledContent("DNS service") {
+                    SettingsComponentStatus(status: status.service)
+                }
+                LabeledContent("Configuration") {
+                    SettingsComponentStatus(status: status.configuration)
+                }
+                LabeledContent("Managed directory") {
+                    SettingsComponentStatus(status: status.managedDirectory)
+                }
             }
 
             Section("Administrative access") {
@@ -122,10 +136,22 @@ private struct EnvironmentSettingsView: View {
 
             Section {
                 Button {
-                    status = DependencyChecker().check()
+                    guard !isChecking else { return }
+                    isChecking = true
+                    Task {
+                        status = await Task.detached {
+                            DependencyChecker().check()
+                        }.value
+                        isChecking = false
+                    }
                 } label: {
-                    Label("Check again", systemImage: "arrow.clockwise")
+                    if isChecking {
+                        ProgressView().controlSize(.small)
+                    } else {
+                        Label("Check again", systemImage: "arrow.clockwise")
+                    }
                 }
+                .disabled(isChecking)
             }
 
             Section {
@@ -135,6 +161,25 @@ private struct EnvironmentSettingsView: View {
             }
         }
         .formStyle(.grouped)
+    }
+}
+
+private struct SettingsComponentStatus: View {
+    let status: EnvironmentComponentStatus
+
+    var body: some View {
+        Label(status.detail, systemImage: status.systemImage)
+            .foregroundStyle(tint)
+            .font(.caption)
+    }
+
+    private var tint: Color {
+        switch status {
+        case .ready: .green
+        case .warning: .orange
+        case .failed: .red
+        case .unknown: .secondary
+        }
     }
 }
 

@@ -45,7 +45,17 @@ struct PawxyTests {
         draft.address = "999.0.0.1"
 
         #expect(draft.localDomain == nil)
-        #expect(draft.validationMessage == "Enter a valid IPv4 address.")
+        #expect(draft.validationMessage == "Enter a valid IPv4 or IPv6 address.")
+    }
+
+    @Test func draftNormalizesIPv6Addresses() throws {
+        var draft = LocalDomainDraft()
+        draft.domain = "ipv6.test"
+        draft.address = "2001:0DB8:0:0:0:0:0:1"
+
+        let domain = try #require(draft.localDomain)
+        #expect(domain.address == "2001:db8::1")
+        #expect(IPAddress.matches(domain.address, "2001:db8:0:0::1"))
     }
 
     @Test func draftRejectsUnsupportedDNSNamesAndAmbiguousIPv4Addresses() {
@@ -60,6 +70,11 @@ struct PawxyTests {
         draft.domain = "example.test"
         draft.address = "127.00.0.1"
         #expect(draft.localDomain == nil)
+
+        draft.address = "127.0.0.1"
+        draft.domain = "bonjour.local"
+        #expect(draft.localDomain == nil)
+        #expect(draft.validationMessage?.contains("Bonjour") == true)
     }
 
     @Test func dependencyCheckerReportsExecutableAvailability() {
@@ -124,6 +139,24 @@ struct PawxyTests {
         #expect(domain.sourceLine == 1)
     }
 
+    @Test func dnsmasqScannerReadsIPv6Mappings() throws {
+        let temporaryDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let rootFile = temporaryDirectory.appendingPathComponent("dnsmasq.conf")
+        defer { try? FileManager.default.removeItem(at: temporaryDirectory) }
+
+        try FileManager.default.createDirectory(at: temporaryDirectory, withIntermediateDirectories: true)
+        try "host-record=ipv6.test,2001:0db8:0:0:0:0:0:1\n"
+            .write(to: rootFile, atomically: true, encoding: .utf8)
+
+        let domain = try #require(
+            DnsmasqConfigScanner(rootConfigurationFiles: [rootFile.path]).scan().first
+        )
+        #expect(domain.domain == "ipv6.test")
+        #expect(domain.address == "2001:db8::1")
+        #expect(!domain.wildcard)
+    }
+
     @Test func dnsmasqScannerReportsConflictingDirectives() throws {
         let temporaryDirectory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
@@ -163,6 +196,24 @@ struct PawxyTests {
 
         #expect(reloadedStore.domains.count == 1)
         #expect(reloadedStore.domains.first?.domain == "example.test")
+    }
+
+    @MainActor
+    @Test func activityLogPersistsAndCanBeCleared() throws {
+        let temporaryDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let fileURL = temporaryDirectory.appendingPathComponent("activity.json")
+        defer { try? FileManager.default.removeItem(at: temporaryDirectory) }
+
+        let store = ActivityLogStore(fileURL: fileURL)
+        store.record(.service, title: "Restarted")
+
+        let restored = ActivityLogStore(fileURL: fileURL)
+        #expect(restored.entries.count == 1)
+        #expect(restored.entries.first?.title == "Restarted")
+
+        restored.clear()
+        #expect(restored.entries.isEmpty)
     }
 
     @MainActor
@@ -330,7 +381,7 @@ struct PawxyTests {
             address: "127.0.0.1",
             origin: .imported(file: "/tmp/example.conf", line: 1)
         )
-        let pending = PendingDomainChanges()
+        let pending = PendingDomainChanges(persistsChanges: false)
 
         var updated = original
         updated.address = "127.0.0.2"
@@ -351,6 +402,75 @@ struct PawxyTests {
         pending.stageAdd(added)
         pending.stageDelete(added)
         #expect(pending.count == 1)
+    }
+
+    @MainActor
+    @Test func pendingChangesPersistAcrossLaunches() throws {
+        let temporaryDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let fileURL = temporaryDirectory.appendingPathComponent("pending.json")
+        defer { try? FileManager.default.removeItem(at: temporaryDirectory) }
+
+        let domain = LocalDomain(domain: "pending.test", address: "127.0.0.1")
+        let pending = PendingDomainChanges(fileURL: fileURL)
+        pending.stageAdd(domain)
+
+        let restored = PendingDomainChanges(fileURL: fileURL)
+        #expect(restored.changes == [.add(domain)])
+
+        restored.discardAll()
+        #expect(!FileManager.default.fileExists(atPath: fileURL.path))
+    }
+
+    @MainActor
+    @Test func conflictResolutionKeepsTheSelectedDefinition() throws {
+        let first = DomainDirectiveSource(
+            file: "/tmp/first.conf",
+            line: 1,
+            address: "127.0.0.1",
+            wildcard: true
+        )
+        let second = DomainDirectiveSource(
+            file: "/tmp/second.conf",
+            line: 2,
+            address: "127.0.0.2",
+            wildcard: false
+        )
+        let conflict = LocalDomain(
+            domain: "duplicate.test",
+            address: first.address,
+            wildcard: first.wildcard,
+            origin: .conflict(sources: [first, second])
+        )
+        let pending = PendingDomainChanges(persistsChanges: false)
+
+        pending.stageConflictResolution(for: conflict, keeping: second)
+        let resolved = try #require(pending.domains(applyingTo: [conflict]).first)
+
+        #expect(resolved.address == "127.0.0.2")
+        #expect(!resolved.wildcard)
+        #expect(resolved.origin == .imported(file: second.file, line: second.line))
+    }
+
+    @Test func configurationSnapshotsRememberExistingAndNewFiles() throws {
+        let temporaryDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let snapshotDirectory = temporaryDirectory.appendingPathComponent("snapshots")
+        let existingFile = temporaryDirectory.appendingPathComponent("existing.conf")
+        let newFile = temporaryDirectory.appendingPathComponent("new.conf")
+        defer { try? FileManager.default.removeItem(at: temporaryDirectory) }
+
+        try FileManager.default.createDirectory(at: temporaryDirectory, withIntermediateDirectories: true)
+        try "original\n".write(to: existingFile, atomically: true, encoding: .utf8)
+
+        let store = ConfigurationSnapshotStore(rootDirectory: snapshotDirectory)
+        let snapshot = try store.capture(paths: [existingFile.path, newFile.path])
+        let existingEntry = try #require(snapshot.entries.first { $0.destination == existingFile.path })
+        let newEntry = try #require(snapshot.entries.first { $0.destination == newFile.path })
+
+        #expect(try store.data(for: existingEntry, snapshot: snapshot) == Data("original\n".utf8))
+        #expect(try store.data(for: newEntry, snapshot: snapshot) == nil)
+        #expect(store.latest() == snapshot)
     }
 
     @Test func legacySplitRejectsCustomDnsmasqContent() {

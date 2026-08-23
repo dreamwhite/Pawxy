@@ -126,6 +126,8 @@ private struct PendingChangeRow: View {
             original.domain == updated.domain
                 ? updated.domain
                 : "\(original.domain) → \(updated.domain)"
+        case let .resolveConflict(domain, _):
+            domain.domain
         }
     }
 
@@ -139,6 +141,8 @@ private struct PendingChangeRow: View {
             let before = "\(original.address), \(coverage(original)), \(state(original))"
             let after = "\(updated.address), \(coverage(updated)), \(state(updated))"
             return "\(before) → \(after)"
+        case let .resolveConflict(_, source):
+            return String(localized: "Keep \(source.label) and remove the other conflicting directives.")
         }
     }
 
@@ -147,6 +151,7 @@ private struct PendingChangeRow: View {
         case .add: String(localized: "Add")
         case .update: String(localized: "Change")
         case .delete: String(localized: "Delete")
+        case .resolveConflict: String(localized: "Resolve")
         }
     }
 
@@ -155,6 +160,7 @@ private struct PendingChangeRow: View {
         case .add: "plus.circle.fill"
         case .update: "pencil.circle.fill"
         case .delete: "trash.circle.fill"
+        case .resolveConflict: "checkmark.shield.fill"
         }
     }
 
@@ -163,6 +169,7 @@ private struct PendingChangeRow: View {
         case .add: .green
         case .update: .blue
         case .delete: .red
+        case .resolveConflict: .orange
         }
     }
 

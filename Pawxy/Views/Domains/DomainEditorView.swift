@@ -97,9 +97,9 @@ struct DomainEditorView: View {
                         }
 
                         GridRow {
-                            Text("IPv4 address")
+                            Text("IP address")
                                 .foregroundStyle(.secondary)
-                            TextField("IPv4 address", text: $draft.address)
+                            TextField("IP address", text: $draft.address)
                                 .textFieldStyle(.roundedBorder)
                                 .font(.body.monospaced())
                         }

@@ -11,7 +11,9 @@ import UniformTypeIdentifiers
 
 struct ContentView: View {
     @EnvironmentObject private var store: DomainStore
+    @EnvironmentObject private var activityLog: ActivityLogStore
     @StateObject private var pendingChanges = PendingDomainChanges()
+    @StateObject private var configurationWatcher = DnsmasqConfigurationWatcher()
 
     @State private var environmentStatus: DevelopmentEnvironmentStatus
     private let dnsmasqManager = DnsmasqConfigurationManager()
@@ -24,6 +26,7 @@ struct ContentView: View {
     @State private var hasLegacyConfiguration = false
     @State private var editorPresentation: DomainEditorPresentation?
     @State private var backupImportPresentation: BackupImportPresentation?
+    @State private var conflictResolutionCandidate: LocalDomain?
     @State private var showsPendingChanges = false
     @State private var deletionCandidate: LocalDomain?
     @State private var serviceMessage: String?
@@ -50,6 +53,11 @@ struct ContentView: View {
         .frame(minWidth: 940, minHeight: 620)
         .sheet(item: $editorPresentation, content: domainEditor)
         .sheet(item: $backupImportPresentation, content: backupImportSheet)
+        .sheet(item: $conflictResolutionCandidate) { domain in
+            ConflictResolutionView(domain: domain) { source in
+                pendingChanges.stageConflictResolution(for: domain, keeping: source)
+            }
+        }
         .sheet(isPresented: $showsPendingChanges) {
             PendingChangesView(
                 changes: pendingChanges.changes,
@@ -90,9 +98,17 @@ struct ContentView: View {
         }
         .task {
             refreshMappings()
+            configurationWatcher.start(
+                paths: [
+                    dnsmasqManager.rootConfigurationPath,
+                    dnsmasqManager.configurationDirectoryPath
+                ],
+                onChange: refreshMappings
+            )
         }
         .onDisappear {
             refreshTask?.cancel()
+            configurationWatcher.stop()
         }
         .onReceive(NotificationCenter.default.publisher(for: .addPawxyDomain)) { _ in
             showDomainEditor()
@@ -157,9 +173,7 @@ struct ContentView: View {
                 onRestart: restartDnsmasq,
                 onRevealFile: revealFile,
                 onShowEnvironment: { destination = .environment },
-                onCheckEnvironment: {
-                    environmentStatus = DependencyChecker().check()
-                }
+                onCheckEnvironment: checkEnvironment
             )
 
         case .domains:
@@ -177,9 +191,12 @@ struct ContentView: View {
                 onExportBackup: exportBackup,
                 onShowInFinder: revealSourceFile,
                 onRepairResolver: repairSystemResolver,
+                onResolveConflict: { conflictResolutionCandidate = $0 },
                 onEdit: editDomain,
                 onDelete: requestDeletion,
-                onSetEnabled: setDomainEnabled
+                onSetEnabled: setDomainEnabled,
+                onSetEnabledMany: setDomainsEnabled,
+                onDeleteMany: stageDomainDeletions
             )
 
         case .environment:
@@ -188,14 +205,24 @@ struct ContentView: View {
                 discoveredDomainCount: discoveredDomains.count,
                 showsLegacyConfiguration: hasLegacyConfiguration,
                 onCheckAgain: {
-                    environmentStatus = DependencyChecker().check()
+                    await refreshEnvironmentStatus()
                 },
                 onRefresh: refreshMappings,
                 onRestart: restartDnsmasq,
                 onMigrateLegacy: migrateLegacyConfiguration,
                 onShowConfiguration: {
                     revealFile(dnsmasqManager.rootConfigurationPath)
-                }
+                },
+                onRepairConfiguration: repairManagedConfigurationInclude,
+                latestSnapshotDate: dnsmasqManager.latestSnapshotDate,
+                onRestoreSnapshot: restoreLatestConfigurationSnapshot,
+                onCopyDiagnostics: copyDiagnostics
+            )
+
+        case .activity:
+            ActivityLogView(
+                environmentStatus: environmentStatus,
+                domains: store.domains
             )
         }
     }
@@ -300,11 +327,94 @@ struct ContentView: View {
                     try DnsmasqConfigurationManager().restart()
                 }.value
                 refreshMappings()
+                activityLog.record(
+                    .service,
+                    title: String(localized: "dnsmasq restarted")
+                )
                 serviceMessage = String(localized: "The configuration is valid and dnsmasq was restarted successfully.")
             } catch {
+                recordFailure(.service, title: String(localized: "dnsmasq restart failed"), error: error)
                 configurationError = error.localizedDescription
             }
         }
+    }
+
+    private func checkEnvironment() {
+        Task { await refreshEnvironmentStatus() }
+    }
+
+    private func refreshEnvironmentStatus() async {
+        let status = await Task.detached(priority: .userInitiated) {
+            DependencyChecker().check()
+        }.value
+        guard !Task.isCancelled else { return }
+        environmentStatus = status
+    }
+
+    private func repairManagedConfigurationInclude() {
+        guard !isPerformingServiceOperation else { return }
+        isPerformingServiceOperation = true
+        Task {
+            defer { isPerformingServiceOperation = false }
+            do {
+                let changed = try await Task.detached(priority: .userInitiated) {
+                    try DnsmasqConfigurationManager().repairManagedConfigurationInclude()
+                }.value
+                await refreshEnvironmentStatus()
+                refreshMappings()
+                serviceMessage = changed
+                    ? String(localized: "dnsmasq.d was added to dnsmasq.conf and dnsmasq was restarted.")
+                    : String(localized: "dnsmasq.d is already included by dnsmasq.conf.")
+                activityLog.record(
+                    .configuration,
+                    title: changed
+                        ? String(localized: "Repaired dnsmasq.d include")
+                        : String(localized: "Checked dnsmasq.d include")
+                )
+            } catch {
+                recordFailure(.configuration, title: String(localized: "dnsmasq.d repair failed"), error: error)
+                configurationError = error.localizedDescription
+            }
+        }
+    }
+
+    private func restoreLatestConfigurationSnapshot() {
+        guard !isPerformingServiceOperation else { return }
+        isPerformingServiceOperation = true
+        Task {
+            defer { isPerformingServiceOperation = false }
+            do {
+                let restoredDate = try await Task.detached(priority: .userInitiated) {
+                    try DnsmasqConfigurationManager().restoreLatestSnapshot()
+                }.value
+                refreshMappings()
+                await refreshEnvironmentStatus()
+                if let restoredDate {
+                    activityLog.record(
+                        .configuration,
+                        title: String(localized: "Configuration snapshot restored")
+                    )
+                    serviceMessage = String(localized: "Restored the configuration snapshot from \(restoredDate.formatted(date: .abbreviated, time: .shortened)).")
+                } else {
+                    serviceMessage = String(localized: "No configuration snapshot is available.")
+                }
+            } catch {
+                recordFailure(.configuration, title: String(localized: "Configuration restore failed"), error: error)
+                configurationError = error.localizedDescription
+            }
+        }
+    }
+
+    private func copyDiagnostics() {
+        let report = PawxyDiagnosticsService().report(
+            status: environmentStatus,
+            domains: store.domains,
+            recentActivity: activityLog.entries
+        )
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(report, forType: .string)
+        activityLog.record(.diagnostics, title: String(localized: "Diagnostics copied"))
+        serviceMessage = String(localized: "Diagnostics copied to the clipboard.")
     }
 
     private func migrateLegacyConfiguration() {
@@ -322,7 +432,13 @@ struct ContentView: View {
                     : count == 1
                         ? String(localized: "Moved one mapping into a separate dnsmasq configuration file.")
                         : String(localized: "Moved \(count) mappings into separate dnsmasq configuration files.")
+                activityLog.record(
+                    .configuration,
+                    title: String(localized: "Migrated legacy configuration"),
+                    detail: String(localized: "\(count) mappings processed")
+                )
             } catch {
+                recordFailure(.configuration, title: String(localized: "Legacy migration failed"), error: error)
                 configurationError = error.localizedDescription
             }
         }
@@ -361,7 +477,12 @@ struct ContentView: View {
                 backup: backup,
                 filename: url.lastPathComponent
             )
+            activityLog.record(
+                .backup,
+                title: String(localized: "Backup opened for review")
+            )
         } catch {
+            recordFailure(.backup, title: String(localized: "Backup import failed"), error: error)
             configurationError = error.localizedDescription
         }
     }
@@ -385,7 +506,13 @@ struct ContentView: View {
             serviceMessage = store.domains.count == 1
                 ? String(localized: "Exported one mapping to \(url.lastPathComponent).")
                 : String(localized: "Exported \(store.domains.count) mappings to \(url.lastPathComponent).")
+            activityLog.record(
+                .backup,
+                title: String(localized: "Backup exported"),
+                detail: String(localized: "\(store.domains.count) mappings exported")
+            )
         } catch {
+            recordFailure(.backup, title: String(localized: "Backup export failed"), error: error)
             configurationError = error.localizedDescription
         }
     }
@@ -410,6 +537,18 @@ struct ContentView: View {
         pendingChanges.stageUpdate(original: original, updated: updated)
     }
 
+    private func setDomainsEnabled(_ enabled: Bool, domains: [LocalDomain]) {
+        for domain in domains where domain.enabled != enabled {
+            setDomainEnabled(enabled, domain: domain)
+        }
+    }
+
+    private func stageDomainDeletions(_ domains: [LocalDomain]) {
+        for domain in domains {
+            pendingChanges.stageDelete(domain)
+        }
+    }
+
     private func repairSystemResolver(for domain: LocalDomain) {
         guard !updatingDomainIDs.contains(domain.id) else { return }
 
@@ -423,8 +562,15 @@ struct ContentView: View {
                 serviceMessage = installed
                     ? "Installed the macOS resolver for \(domain.domain)."
                     : "The macOS resolver for \(domain.domain) is already configured correctly."
+                activityLog.record(
+                    .resolver,
+                    title: installed
+                        ? String(localized: "System resolver installed")
+                        : String(localized: "System resolver checked")
+                )
                 healthCheckRevision &+= 1
             } catch {
+                recordFailure(.resolver, title: String(localized: "System resolver repair failed"), error: error)
                 configurationError = error.localizedDescription
             }
         }
@@ -453,7 +599,15 @@ struct ContentView: View {
                 serviceMessage = changes.count == 1
                     ? String(localized: "Applied one DNS change and restarted dnsmasq.")
                     : String(localized: "Applied \(changes.count) DNS changes and restarted dnsmasq.")
+                activityLog.record(
+                    .configuration,
+                    title: String(localized: "Applied DNS changes"),
+                    detail: changes.count == 1
+                        ? String(localized: "1 change applied")
+                        : String(localized: "\(changes.count) changes applied")
+                )
             } catch {
+                recordFailure(.configuration, title: String(localized: "DNS changes failed"), error: error)
                 configurationError = error.localizedDescription
             }
         }
@@ -462,6 +616,19 @@ struct ContentView: View {
     private func discardPendingChanges() {
         pendingChanges.discardAll()
         showsPendingChanges = false
+    }
+
+    private func recordFailure(
+        _ kind: ActivityLogEntry.Kind,
+        title: String,
+        error: Error
+    ) {
+        activityLog.record(
+            kind,
+            title: title,
+            detail: error.localizedDescription,
+            succeeded: false
+        )
     }
 
 }

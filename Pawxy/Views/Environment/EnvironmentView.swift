@@ -9,24 +9,41 @@ struct EnvironmentView: View {
     let status: DevelopmentEnvironmentStatus
     let discoveredDomainCount: Int
     let showsLegacyConfiguration: Bool
-    let onCheckAgain: () -> Void
+    let onCheckAgain: () async -> Void
     let onRefresh: () -> Void
     let onRestart: () -> Void
     let onMigrateLegacy: () -> Void
     let onShowConfiguration: () -> Void
+    let onRepairConfiguration: () -> Void
+    let latestSnapshotDate: Date?
+    let onRestoreSnapshot: () -> Void
+    let onCopyDiagnostics: () -> Void
 
     @State private var isChecking = false
+    @State private var showsRestoreConfirmation = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 22) {
-            header
-            toolsPanel
-            authorizationPanel
-            configurationPanel
-            Spacer()
+        ScrollView {
+            VStack(alignment: .leading, spacing: 22) {
+                header
+                toolsPanel
+                operationalPanel
+                authorizationPanel
+                configurationPanel
+            }
+            .padding(24)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(24)
         .background(Color(nsColor: .windowBackgroundColor))
+        .confirmationDialog(
+            "Restore the latest configuration snapshot?",
+            isPresented: $showsRestoreConfirmation
+        ) {
+            Button("Restore Snapshot", role: .destructive, action: onRestoreSnapshot)
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Pawxy will restore every file changed by that transaction and restart dnsmasq.")
+        }
     }
 
     private var authorizationPanel: some View {
@@ -66,6 +83,10 @@ struct EnvironmentView: View {
 
             Spacer()
 
+            Button(action: onCopyDiagnostics) {
+                Label("Copy Diagnostics", systemImage: "doc.on.doc")
+            }
+
             Button(action: checkAgain) {
                 HStack(spacing: 7) {
                     if isChecking {
@@ -102,6 +123,28 @@ struct EnvironmentView: View {
         }
     }
 
+    private var operationalPanel: some View {
+        GroupBox("Runtime health") {
+            VStack(spacing: 0) {
+                EnvironmentComponentRow(
+                    name: "DNS service",
+                    status: status.service
+                )
+                Divider().padding(.leading, 46)
+                EnvironmentComponentRow(
+                    name: "Configuration",
+                    status: status.configuration
+                )
+                Divider().padding(.leading, 46)
+                EnvironmentComponentRow(
+                    name: "Managed directory",
+                    status: status.managedDirectory
+                )
+            }
+            .padding(.horizontal, 8)
+        }
+    }
+
     private var configurationPanel: some View {
         GroupBox("Existing configuration") {
             HStack(spacing: 12) {
@@ -127,6 +170,16 @@ struct EnvironmentView: View {
                     if showsLegacyConfiguration {
                         Button("Split Pawxy file", action: onMigrateLegacy)
                     }
+                    if !status.managedDirectory.isReady {
+                        Button("Repair dnsmasq.d Include", action: onRepairConfiguration)
+                            .buttonStyle(.borderedProminent)
+                            .disabled(!status.homebrew.isAvailable || !status.dnsmasq.isAvailable)
+                    }
+                    if latestSnapshotDate != nil {
+                        Button("Restore Last Snapshot…") {
+                            showsRestoreConfirmation = true
+                        }
+                    }
                     Button(action: onShowConfiguration) {
                         Label("Show in Finder", systemImage: "folder")
                     }
@@ -142,9 +195,39 @@ struct EnvironmentView: View {
         isChecking = true
 
         Task {
-            try? await Task.sleep(for: .milliseconds(450))
-            onCheckAgain()
+            await onCheckAgain()
             isChecking = false
+        }
+    }
+}
+
+private struct EnvironmentComponentRow: View {
+    let name: LocalizedStringResource
+    let status: EnvironmentComponentStatus
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: status.systemImage)
+                .foregroundStyle(tint)
+                .frame(width: 26)
+            Text(name)
+                .font(.headline)
+            Spacer()
+            Text(status.detail)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+                .multilineTextAlignment(.trailing)
+        }
+        .padding(.vertical, 11)
+    }
+
+    private var tint: Color {
+        switch status {
+        case .ready: .green
+        case .warning: .orange
+        case .failed: .red
+        case .unknown: .secondary
         }
     }
 }
