@@ -11,6 +11,7 @@ import SwiftUI
 struct PawxyApp: App {
     @StateObject private var domainStore = DomainStore()
     @StateObject private var softwareUpdates = SoftwareUpdateController()
+    @StateObject private var activityLog = ActivityLogStore()
     @AppStorage("showMenuBarExtra") private var showMenuBarExtra = true
 
     var body: some Scene {
@@ -18,6 +19,7 @@ struct PawxyApp: App {
             AppRootView()
                 .environmentObject(domainStore)
                 .environmentObject(softwareUpdates)
+                .environmentObject(activityLog)
         }
         .commands {
             PawxyCommands(softwareUpdates: softwareUpdates)
@@ -47,6 +49,7 @@ struct PawxyApp: App {
         ) {
             PawxyMenuBarView()
                 .environmentObject(domainStore)
+                .environmentObject(activityLog)
         }
         .menuBarExtraStyle(.menu)
     }

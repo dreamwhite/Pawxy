@@ -9,6 +9,7 @@ import SwiftUI
 struct PawxyMenuBarView: View {
     @Environment(\.openWindow) private var openWindow
     @EnvironmentObject private var store: DomainStore
+    @EnvironmentObject private var activityLog: ActivityLogStore
 
     @State private var environmentStatus = DependencyChecker().check()
     @State private var healthResults: [UUID: DomainResolutionTestResult] = [:]
@@ -220,7 +221,9 @@ struct PawxyMenuBarView: View {
         if clearActivityMessage {
             activityMessage = nil
         }
-        environmentStatus = DependencyChecker().check()
+        environmentStatus = await Task.detached(priority: .utility) {
+            DependencyChecker().check()
+        }.value
 
         let discovered = await Task.detached {
             DnsmasqConfigScanner().scan()
@@ -245,9 +248,16 @@ struct PawxyMenuBarView: View {
                 }.value
                 isRestarting = false
                 activityMessage = String(localized: "dnsmasq restarted successfully")
+                activityLog.record(.service, title: String(localized: "dnsmasq restarted"))
                 await refreshAndCheck(clearActivityMessage: false)
             } catch {
                 isRestarting = false
+                activityLog.record(
+                    .service,
+                    title: String(localized: "dnsmasq restart failed"),
+                    detail: error.localizedDescription,
+                    succeeded: false
+                )
                 presentOperationError(error)
             }
         }
@@ -268,9 +278,20 @@ struct PawxyMenuBarView: View {
                 activityMessage = installedCount == 1
                     ? String(localized: "Installed one missing resolver")
                     : String(localized: "Installed \(installedCount) missing resolvers")
+                activityLog.record(
+                    .resolver,
+                    title: String(localized: "Repaired system resolvers"),
+                    detail: String(localized: "\(installedCount) resolvers updated")
+                )
                 await refreshAndCheck(clearActivityMessage: false)
             } catch {
                 isRepairingResolvers = false
+                activityLog.record(
+                    .resolver,
+                    title: String(localized: "System resolver repair failed"),
+                    detail: error.localizedDescription,
+                    succeeded: false
+                )
                 presentOperationError(error)
             }
         }
