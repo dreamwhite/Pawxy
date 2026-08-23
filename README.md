@@ -16,6 +16,7 @@
 <p align="center">
   <a href="https://github.com/dreamwhite/Pawxy/releases/latest"><img src="https://img.shields.io/github/v/release/dreamwhite/Pawxy?display_name=tag&sort=semver&style=flat-square" alt="Latest release"></a>
   <a href="https://github.com/dreamwhite/Pawxy/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/dreamwhite/Pawxy/ci.yml?branch=main&style=flat-square&label=build" alt="Build workflow"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/dreamwhite/Pawxy?style=flat-square" alt="MIT License"></a>
   <img src="https://img.shields.io/badge/macOS-14%2B-111111?style=flat-square&logo=apple" alt="macOS 14 or later">
   <img src="https://img.shields.io/badge/Swift-5-F05138?style=flat-square&logo=swift&logoColor=white" alt="Swift 5">
 </p>
@@ -29,10 +30,11 @@
   <a href="#getting-started">Getting started</a>
 </p>
 
-Pawxy is a native macOS utility for managing local development domains with
-[dnsmasq](https://thekelleys.org.uk/dnsmasq/doc.html). It discovers existing
-mappings, keeps macOS resolvers in sync, safely applies configuration changes,
-restarts dnsmasq, and verifies that hostnames actually resolve.
+Pawxy is a free and open-source native macOS utility for managing local
+development domains with [dnsmasq](https://thekelleys.org.uk/dnsmasq/doc.html).
+It discovers existing mappings, keeps macOS resolvers in sync, safely applies
+configuration changes, restarts dnsmasq, and verifies that hostnames actually
+resolve.
 
 The goal is simple: make local DNS feel like an application feature instead of
 a collection of shell commands and configuration files.
@@ -366,6 +368,10 @@ Issues and focused pull requests are welcome. Before submitting a change:
 
 Please avoid including private domains, resolver files, signing keys, exported
 Sparkle keys, or machine-specific Xcode data in commits.
+
+## License
+
+Pawxy is available under the [MIT License](LICENSE).
 
 ## Acknowledgements
 
