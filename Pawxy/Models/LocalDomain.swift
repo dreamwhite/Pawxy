@@ -62,8 +62,45 @@ nonisolated enum LocalDomainOrigin: Codable, Equatable, Sendable {
 nonisolated struct DomainDirectiveSource: Codable, Equatable, Hashable, Sendable {
     let file: String
     let line: Int
+    let address: String
+    let wildcard: Bool
+    let enabled: Bool
+
+    init(
+        file: String,
+        line: Int,
+        address: String = "",
+        wildcard: Bool = false,
+        enabled: Bool = true
+    ) {
+        self.file = file
+        self.line = line
+        self.address = address
+        self.wildcard = wildcard
+        self.enabled = enabled
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        file = try container.decode(String.self, forKey: .file)
+        line = try container.decode(Int.self, forKey: .line)
+        address = try container.decodeIfPresent(String.self, forKey: .address) ?? ""
+        wildcard = try container.decodeIfPresent(Bool.self, forKey: .wildcard) ?? false
+        enabled = try container.decodeIfPresent(Bool.self, forKey: .enabled) ?? true
+    }
 
     var label: String {
         "\(URL(fileURLWithPath: file).lastPathComponent):\(line)"
+    }
+
+    func domainDefinition(fallback: LocalDomain) -> LocalDomain {
+        LocalDomain(
+            id: fallback.id,
+            domain: fallback.domain,
+            address: address.isEmpty ? fallback.address : address,
+            wildcard: address.isEmpty ? fallback.wildcard : wildcard,
+            enabled: enabled,
+            origin: .imported(file: file, line: line)
+        )
     }
 }

@@ -6,10 +6,11 @@
 import Combine
 import Foundation
 
-nonisolated enum PendingDomainChange: Identifiable, Equatable, Sendable {
+nonisolated enum PendingDomainChange: Identifiable, Codable, Equatable, Sendable {
     case add(LocalDomain)
     case update(original: LocalDomain, updated: LocalDomain)
     case delete(LocalDomain)
+    case resolveConflict(domain: LocalDomain, keeping: DomainDirectiveSource)
 
     var id: UUID {
         switch self {
@@ -17,6 +18,8 @@ nonisolated enum PendingDomainChange: Identifiable, Equatable, Sendable {
             domain.id
         case let .update(original, _):
             original.id
+        case let .resolveConflict(domain, _):
+            domain.id
         }
     }
 
@@ -26,6 +29,8 @@ nonisolated enum PendingDomainChange: Identifiable, Equatable, Sendable {
             domain
         case .delete:
             nil
+        case let .resolveConflict(domain, source):
+            source.domainDefinition(fallback: domain)
         }
     }
 
@@ -35,13 +40,29 @@ nonisolated enum PendingDomainChange: Identifiable, Equatable, Sendable {
             nil
         case let .update(original, _), let .delete(original):
             original
+        case let .resolveConflict(domain, _):
+            domain
         }
     }
 }
 
 @MainActor
 final class PendingDomainChanges: ObservableObject {
-    @Published private(set) var changes: [PendingDomainChange] = []
+    @Published private(set) var changes: [PendingDomainChange] = [] {
+        didSet { save() }
+    }
+
+    private let fileURL: URL
+    private let persistsChanges: Bool
+
+    init(
+        fileURL: URL = PendingDomainChanges.defaultFileURL,
+        persistsChanges: Bool = true
+    ) {
+        self.fileURL = fileURL
+        self.persistsChanges = persistsChanges
+        load()
+    }
 
     var isEmpty: Bool { changes.isEmpty }
     var count: Int { changes.count }
@@ -63,6 +84,8 @@ final class PendingDomainChanges: ObservableObject {
                 }
             case .delete:
                 break
+            case .resolveConflict:
+                break
             }
         } else if original != updated {
             replace(.update(original: original, updated: updated))
@@ -78,10 +101,19 @@ final class PendingDomainChanges: ObservableObject {
                 replace(.delete(original))
             case .delete:
                 break
+            case .resolveConflict:
+                break
             }
         } else {
             replace(.delete(domain))
         }
+    }
+
+    func stageConflictResolution(
+        for domain: LocalDomain,
+        keeping source: DomainDirectiveSource
+    ) {
+        replace(.resolveConflict(domain: domain, keeping: source))
     }
 
     func discardAll() {
@@ -96,6 +128,8 @@ final class PendingDomainChanges: ObservableObject {
                 byID[domain.id] = domain
             case let .delete(domain):
                 byID.removeValue(forKey: domain.id)
+            case let .resolveConflict(domain, source):
+                byID[domain.id] = source.domainDefinition(fallback: domain)
             }
         }
         return byID.values.sorted {
@@ -114,5 +148,46 @@ final class PendingDomainChanges: ObservableObject {
 
     private func remove(id: UUID) {
         changes.removeAll { $0.id == id }
+    }
+
+    private func load() {
+        guard persistsChanges,
+              FileManager.default.fileExists(atPath: fileURL.path),
+              let data = try? Data(contentsOf: fileURL),
+              let decoded = try? JSONDecoder().decode([PendingDomainChange].self, from: data)
+        else {
+            return
+        }
+        changes = decoded
+    }
+
+    private func save() {
+        guard persistsChanges else { return }
+        do {
+            if changes.isEmpty {
+                if FileManager.default.fileExists(atPath: fileURL.path) {
+                    try FileManager.default.removeItem(at: fileURL)
+                }
+                return
+            }
+            try FileManager.default.createDirectory(
+                at: fileURL.deletingLastPathComponent(),
+                withIntermediateDirectories: true
+            )
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+            try encoder.encode(changes).write(to: fileURL, options: .atomic)
+        } catch {
+            // Pending changes remain available in memory even if persistence fails.
+        }
+    }
+
+    nonisolated private static var defaultFileURL: URL {
+        FileManager.default.urls(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask
+        )[0]
+            .appendingPathComponent("Pawxy", isDirectory: true)
+            .appendingPathComponent("pending-changes.json", isDirectory: false)
     }
 }

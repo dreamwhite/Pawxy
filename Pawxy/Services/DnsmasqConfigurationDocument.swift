@@ -184,7 +184,9 @@ nonisolated enum DnsmasqConfigurationDocument {
         if directive.hasPrefix("address=") {
             let value = String(directive.dropFirst("address=".count))
             let parts = value.split(separator: "/", omittingEmptySubsequences: false).map(String.init)
-            guard parts.count >= 3, parts.last == domain.address else { return false }
+            guard parts.count >= 3,
+                  parts.last.map({ IPAddress.matches($0, domain.address) }) == true
+            else { return false }
             return parts.dropFirst().dropLast().contains {
                 $0.trimmingCharacters(in: CharacterSet(charactersIn: ".")).lowercased() == normalizedDomain
             }
@@ -195,7 +197,8 @@ nonisolated enum DnsmasqConfigurationDocument {
                 .dropFirst("host-record=".count)
                 .split(separator: ",")
                 .map { $0.trimmingCharacters(in: .whitespaces) }
-            return parts.first?.lowercased() == normalizedDomain && parts.contains(domain.address)
+            return parts.first?.lowercased() == normalizedDomain
+                && parts.contains(where: { IPAddress.matches($0, domain.address) })
         }
 
         return false

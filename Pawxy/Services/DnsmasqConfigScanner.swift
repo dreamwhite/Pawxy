@@ -104,7 +104,13 @@ nonisolated struct DnsmasqConfigScanner {
                     sourceFile: preferred.sourceFile,
                     sourceLine: preferred.sourceLine,
                     conflictingSources: ordered.map {
-                        DomainDirectiveSource(file: $0.sourceFile, line: $0.sourceLine)
+                        DomainDirectiveSource(
+                            file: $0.sourceFile,
+                            line: $0.sourceLine,
+                            address: $0.address,
+                            wildcard: $0.wildcard,
+                            enabled: $0.enabled
+                        )
                     }
                 )
             }
@@ -125,11 +131,12 @@ nonisolated struct DnsmasqConfigScanner {
         let parts = value.split(separator: "/", omittingEmptySubsequences: false)
         guard parts.count >= 3,
               let address = parts.last.map(String.init),
-              isIPv4Address(address)
+              IPAddress.normalized(address) != nil
         else {
             return []
         }
 
+        let normalizedAddress = IPAddress.normalized(address) ?? address
         return parts.dropFirst().dropLast().compactMap { rawDomain in
             var domain = String(rawDomain).trimmingCharacters(in: .whitespaces)
             guard !domain.isEmpty, domain != "#" else { return nil }
@@ -140,7 +147,7 @@ nonisolated struct DnsmasqConfigScanner {
 
             return DiscoveredDomain(
                 domain: domain.lowercased(),
-                address: address,
+                address: normalizedAddress,
                 wildcard: true,
                 enabled: enabled,
                 sourceFile: sourceFile,
@@ -159,7 +166,8 @@ nonisolated struct DnsmasqConfigScanner {
             String($0).trimmingCharacters(in: .whitespaces)
         }
 
-        guard let addressIndex = parts.firstIndex(where: isIPv4Address), addressIndex > 0 else {
+        guard let addressIndex = parts.firstIndex(where: { IPAddress.normalized($0) != nil }),
+              addressIndex > 0 else {
             return nil
         }
 
@@ -168,7 +176,7 @@ nonisolated struct DnsmasqConfigScanner {
 
         return DiscoveredDomain(
             domain: domain,
-            address: parts[addressIndex],
+            address: IPAddress.normalized(parts[addressIndex]) ?? parts[addressIndex],
             wildcard: false,
             enabled: enabled,
             sourceFile: sourceFile,
@@ -212,12 +220,4 @@ nonisolated struct DnsmasqConfigScanner {
         NSString(string: path).expandingTildeInPath
     }
 
-    private func isIPv4Address(_ value: String) -> Bool {
-        let octets = value.split(separator: ".", omittingEmptySubsequences: false)
-        guard octets.count == 4 else { return false }
-
-        return octets.allSatisfy {
-            !$0.isEmpty && $0.allSatisfy(\.isNumber) && Int($0).map((0...255).contains) == true
-        }
-    }
 }

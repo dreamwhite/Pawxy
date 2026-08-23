@@ -29,6 +29,38 @@ nonisolated struct DnsmasqConfigurationManager {
         paths.configurationDirectory
     }
 
+    var latestSnapshotDate: Date? {
+        ConfigurationSnapshotStore().latest()?.createdAt
+    }
+
+    @discardableResult
+    func restoreLatestSnapshot() throws -> Date? {
+        let store = ConfigurationSnapshotStore()
+        guard let snapshot = store.latest() else { return nil }
+
+        var installations: [ConfigurationInstallation] = []
+        var deletions: [String] = []
+        for entry in snapshot.entries {
+            if let data = try store.data(for: entry, snapshot: snapshot) {
+                guard let contents = String(data: data, encoding: .utf8) else {
+                    throw ManagerError.couldNotRead(entry.destination, "Snapshot is not valid UTF-8")
+                }
+                installations.append(
+                    ConfigurationInstallation(contents: contents, destination: entry.destination)
+                )
+            } else {
+                deletions.append(entry.destination)
+            }
+        }
+
+        try apply(
+            installations: installations,
+            deletions: deletions,
+            capturesSnapshot: false
+        )
+        return snapshot.createdAt
+    }
+
     var hasLegacyManagedConfiguration: Bool {
         guard fileManager.fileExists(atPath: paths.legacyManagedConfiguration),
               let contents = try? String(
@@ -42,6 +74,38 @@ nonisolated struct DnsmasqConfigurationManager {
         return contents.components(separatedBy: .newlines).contains {
             $0.trimmingCharacters(in: .whitespaces) == "# Managed by Pawxy"
         }
+    }
+
+    var hasManagedConfigurationInclude: Bool {
+        guard let contents = try? readConfiguration(at: paths.rootConfiguration) else {
+            return false
+        }
+        return containsManagedConfigurationInclude(contents)
+    }
+
+    @discardableResult
+    func repairManagedConfigurationInclude() throws -> Bool {
+        let currentContents = try readConfiguration(at: paths.rootConfiguration)
+        guard !containsManagedConfigurationInclude(currentContents) else { return false }
+
+        var updatedContents = currentContents
+        if !updatedContents.isEmpty, !updatedContents.hasSuffix("\n") {
+            updatedContents += "\n"
+        }
+        updatedContents += "\n# Pawxy managed domain configurations\n"
+        updatedContents += "conf-dir=\(paths.configurationDirectory),*.conf\n"
+
+        try apply(installations: [
+            ConfigurationInstallation(
+                contents: updatedContents,
+                destination: paths.rootConfiguration
+            ),
+            ConfigurationInstallation(
+                contents: "# Pawxy configuration directory\n",
+                destination: "\(paths.configurationDirectory)/pawxy-bootstrap.conf"
+            )
+        ])
+        return true
     }
 
     func configurationFilePath(for domain: String) -> String {
@@ -418,7 +482,53 @@ nonisolated struct DnsmasqConfigurationManager {
                     }
                 }
                 try stageResolverChanges(from: domain, to: nil)
+
+            case let .resolveConflict(domain, keeping):
+                guard case let .conflict(sources) = domain.origin,
+                      sources.contains(keeping)
+                else {
+                    throw ManagerError.directiveNotFound(domain.domain)
+                }
+
+                let sourcesToRemove = sources
+                    .filter { $0 != keeping }
+                    .sorted {
+                        if $0.file == $1.file { return $0.line > $1.line }
+                        return $0.file.localizedStandardCompare($1.file) == .orderedAscending
+                    }
+
+                for source in sourcesToRemove {
+                    let sourceDomain = source.domainDefinition(fallback: domain)
+                    let updatedContents = try DnsmasqConfigurationDocument.removing(
+                        sourceDomain,
+                        nearLine: source.line,
+                        from: contents(at: source.file)
+                    )
+                    if try isPawxyDomainFile(source.file),
+                       updatedContents.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        stageDeletion(source.file)
+                    } else {
+                        stageWrite(updatedContents, to: source.file)
+                    }
+                }
+
+                let resolvedDomain = keeping.domainDefinition(fallback: domain)
+                try stageResolverChanges(from: domain, to: resolvedDomain)
             }
+        }
+
+        let writesManagedDomainFile = plannedWrites.keys.contains {
+            standardized($0).hasPrefix(standardized(paths.configurationDirectory) + "/")
+        }
+        if writesManagedDomainFile,
+           !containsManagedConfigurationInclude(try contents(at: paths.rootConfiguration)) {
+            var rootContents = try contents(at: paths.rootConfiguration)
+            if !rootContents.isEmpty, !rootContents.hasSuffix("\n") {
+                rootContents += "\n"
+            }
+            rootContents += "\n# Pawxy managed domain configurations\n"
+            rootContents += "conf-dir=\(paths.configurationDirectory),*.conf\n"
+            stageWrite(rootContents, to: paths.rootConfiguration)
         }
 
         let installations = plannedWrites.map {
@@ -549,6 +659,19 @@ nonisolated struct DnsmasqConfigurationManager {
             && lhs.enabled == rhs.enabled
     }
 
+    private func containsManagedConfigurationInclude(_ contents: String) -> Bool {
+        let expected = standardized(paths.configurationDirectory)
+        return contents.components(separatedBy: .newlines).contains { rawLine in
+            let line = rawLine.trimmingCharacters(in: .whitespaces)
+            guard !line.hasPrefix("#"), line.hasPrefix("conf-dir=") else { return false }
+            let value = String(line.dropFirst("conf-dir=".count))
+                .split(separator: ",", maxSplits: 1)
+                .first
+                .map(String.init) ?? ""
+            return standardized(value) == expected
+        }
+    }
+
     private func resolverChanges(
         from oldDomain: LocalDomain?,
         to newDomain: LocalDomain?
@@ -603,7 +726,8 @@ nonisolated struct DnsmasqConfigurationManager {
     private func apply(
         installations: [ConfigurationInstallation] = [],
         deletions: [String] = [],
-        restartDnsmasq: Bool = true
+        restartDnsmasq: Bool = true,
+        capturesSnapshot: Bool = true
     ) throws {
         guard !installations.isEmpty || !deletions.isEmpty else { return }
 
@@ -616,8 +740,17 @@ nonisolated struct DnsmasqConfigurationManager {
             }
             changes.append(contentsOf: deletions.map(AdministratorFileChange.remove))
 
-            for destination in Set(changes.map(\.destination)) {
-                try createRecoverableBackup(of: destination)
+            if capturesSnapshot {
+                do {
+                    _ = try ConfigurationSnapshotStore().capture(
+                        paths: Array(Set(changes.map(\.destination)))
+                    )
+                } catch {
+                    throw ManagerError.couldNotBackup(
+                        changes.first?.destination ?? "dnsmasq configuration",
+                        error.localizedDescription
+                    )
+                }
             }
             try AdministratorAuthorizationService().transact(
                 homebrewPrefix: paths.prefix,
@@ -633,31 +766,6 @@ nonisolated struct DnsmasqConfigurationManager {
                 installations.first?.destination ?? deletions.first ?? "dnsmasq configuration",
                 error.localizedDescription
             )
-        }
-    }
-
-    private func createRecoverableBackup(of path: String) throws {
-        guard fileManager.fileExists(atPath: path) else { return }
-
-        let backupDirectory = fileManager.urls(
-            for: .applicationSupportDirectory,
-            in: .userDomainMask
-        )[0]
-            .appendingPathComponent("Pawxy", isDirectory: true)
-            .appendingPathComponent("Backups", isDirectory: true)
-
-        do {
-            try fileManager.createDirectory(at: backupDirectory, withIntermediateDirectories: true)
-
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyyMMdd-HHmmss-SSS"
-            let backupName = "\(URL(fileURLWithPath: path).lastPathComponent).\(formatter.string(from: Date())).bak"
-            try fileManager.copyItem(
-                at: URL(fileURLWithPath: path),
-                to: backupDirectory.appendingPathComponent(backupName)
-            )
-        } catch {
-            throw ManagerError.couldNotBackup(path, error.localizedDescription)
         }
     }
 

@@ -87,9 +87,9 @@ struct DnsmasqDomainTester {
 
         let addresses = output.components(separatedBy: .newlines)
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-            .filter(isIPv4Address)
+            .compactMap(IPAddress.normalized)
 
-        if addresses.contains(expectedAddress) {
+        if addresses.contains(where: { IPAddress.matches($0, expectedAddress) }) {
             return .active(hostname: hostname, address: expectedAddress)
         }
         if addresses.isEmpty {
@@ -117,7 +117,7 @@ struct DnsmasqDomainTester {
             "+tries=1",
             "@\(server)",
             hostname,
-            "A"
+            IPAddress.isIPv6(expectedAddress) ? "AAAA" : "A"
         ]
         process.standardOutput = outputPipe
         process.standardError = outputPipe
@@ -153,13 +153,16 @@ struct DnsmasqDomainTester {
 
         let addresses: [String] = output.components(separatedBy: .newlines).compactMap { rawLine in
             let line = rawLine.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard line.hasPrefix("ip_address:") else { return nil }
-            let address = String(line.dropFirst("ip_address:".count))
+            let prefix = line.hasPrefix("ip_address:")
+                ? "ip_address:"
+                : line.hasPrefix("ipv6_address:") ? "ipv6_address:" : nil
+            guard let prefix else { return nil }
+            let address = String(line.dropFirst(prefix.count))
                 .trimmingCharacters(in: .whitespaces)
-            return isIPv4Address(address) ? address : nil
+            return IPAddress.normalized(address)
         }
 
-        return addresses.contains(expectedAddress)
+        return addresses.contains(where: { IPAddress.matches($0, expectedAddress) })
             ? .active(hostname: hostname, address: expectedAddress)
             : .notRouted(hostname: hostname, expected: expectedAddress)
     }
@@ -194,12 +197,4 @@ struct DnsmasqDomainTester {
         )
     }
 
-    nonisolated private static func isIPv4Address(_ value: String) -> Bool {
-        let components = value.split(separator: ".", omittingEmptySubsequences: false)
-        guard components.count == 4 else { return false }
-        return components.allSatisfy { component in
-            guard let number = Int(component), (0...255).contains(number) else { return false }
-            return String(number) == component || component == "0"
-        }
-    }
 }

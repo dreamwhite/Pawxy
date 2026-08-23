@@ -35,8 +35,12 @@ struct LocalDomainDraft {
             return String(localized: "Enter a valid domain, for example my-project.test.")
         }
 
-        if !isValidIPv4Address {
-            return String(localized: "Enter a valid IPv4 address.")
+        if normalizedDomain == "local" || normalizedDomain.hasSuffix(".local") {
+            return String(localized: "The .local suffix is reserved by macOS for Bonjour. Use .test or another development suffix.")
+        }
+
+        if normalizedIPAddress == nil {
+            return String(localized: "Enter a valid IPv4 or IPv6 address.")
         }
 
         return nil
@@ -47,7 +51,7 @@ struct LocalDomainDraft {
 
         return LocalDomain(
             domain: normalizedDomain,
-            address: normalizedAddress,
+            address: normalizedIPAddress ?? normalizedAddress,
             wildcard: wildcard,
             enabled: enabled
         )
@@ -59,7 +63,7 @@ struct LocalDomainDraft {
         return LocalDomain(
             id: domain.id,
             domain: normalizedDomain,
-            address: normalizedAddress,
+            address: normalizedIPAddress ?? normalizedAddress,
             wildcard: wildcard,
             enabled: enabled,
             origin: domain.origin
@@ -91,20 +95,7 @@ struct LocalDomainDraft {
         }
     }
 
-    private var isValidIPv4Address: Bool {
-        let octets = normalizedAddress.split(separator: ".", omittingEmptySubsequences: false)
-        guard octets.count == 4 else { return false }
-
-        return octets.allSatisfy { octet in
-            guard !octet.isEmpty,
-                  octet.allSatisfy(\.isNumber),
-                  let value = Int(octet)
-            else {
-                return false
-            }
-
-            return (0...255).contains(value)
-                && (octet == "0" || !octet.hasPrefix("0"))
-        }
+    private var normalizedIPAddress: String? {
+        IPAddress.normalized(normalizedAddress)
     }
 }
