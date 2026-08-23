@@ -18,7 +18,7 @@ struct ContentView: View {
     @State private var environmentStatus: DevelopmentEnvironmentStatus
     private let dnsmasqManager = DnsmasqConfigurationManager()
 
-    @AppStorage("defaultIPv4Address") private var defaultIPv4Address = "127.0.0.1"
+    @AppStorage("defaultIPv4Address") private var defaultIPAddress = "127.0.0.1"
 
     @State private var destination: SidebarDestination? = .domains
     @State private var searchText = ""
@@ -231,7 +231,7 @@ struct ContentView: View {
         DomainEditorView(
             domain: presentation.domain,
             existingDomains: effectiveDomains,
-            defaultAddress: defaultIPv4Address
+            defaultAddress: defaultIPAddress
         ) { domain in
             if let existingDomain = presentation.domain {
                 pendingChanges.stageUpdate(original: existingDomain, updated: domain)

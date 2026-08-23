@@ -11,6 +11,16 @@
         }
       }
     },
+    "127.0.0.1 or ::1": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "127.0.0.1 o ::1"
+          }
+        }
+      }
+    },
     "%@ Click to test again.": {
       "localizations": {
         "it": {
@@ -1663,6 +1673,56 @@
           "stringUnit": {
             "state": "translated",
             "value": "Indirizzo IP"
+          }
+        }
+      }
+    },
+    "IP address (IPv4 or IPv6)": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Indirizzo IP (IPv4 o IPv6)"
+          }
+        }
+      }
+    },
+    "IPv4": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IPv4"
+          }
+        }
+      }
+    },
+    "IPv4 localhost": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Localhost IPv4"
+          }
+        }
+      }
+    },
+    "IPv6": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IPv6"
+          }
+        }
+      }
+    },
+    "IPv6 localhost": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Localhost IPv6"
           }
         }
       }
@@ -3365,6 +3425,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Usa la barra dei menu per verificare il DNS locale, riavviare dnsmasq, riparare i resolver mancanti e aprire Pawxy senza tenere visibile la finestra."
+          }
+        }
+      }
+    },
+    "Used as the initial value in Add Domain. IPv4 and IPv6 are supported.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usato come valore iniziale in Aggiungi dominio. Sono supportati IPv4 e IPv6."
           }
         }
       }

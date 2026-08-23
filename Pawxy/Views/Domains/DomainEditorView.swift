@@ -97,11 +97,52 @@ struct DomainEditorView: View {
                         }
 
                         GridRow {
-                            Text("IP address")
+                            Text("IP address (IPv4 or IPv6)")
                                 .foregroundStyle(.secondary)
-                            TextField("IP address", text: $draft.address)
+                            HStack(spacing: 10) {
+                                TextField(
+                                    "IP address",
+                                    text: $draft.address,
+                                    prompt: Text("127.0.0.1 or ::1")
+                                )
                                 .textFieldStyle(.roundedBorder)
                                 .font(.body.monospaced())
+
+                                if let addressFamilyLabel {
+                                    Text(addressFamilyLabel)
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(.blue)
+                                        .padding(.horizontal, 9)
+                                        .padding(.vertical, 5)
+                                        .background(
+                                            .blue.opacity(0.11),
+                                            in: Capsule()
+                                        )
+                                        .transition(.opacity)
+                                }
+                            }
+                            .animation(.easeOut(duration: 0.15), value: draft.addressFamily)
+                        }
+
+                        GridRow {
+                            Color.clear
+                                .frame(width: 1, height: 1)
+
+                            HStack(spacing: 8) {
+                                Button {
+                                    draft.address = "127.0.0.1"
+                                } label: {
+                                    Label("IPv4 localhost", systemImage: "4.circle")
+                                }
+
+                                Button {
+                                    draft.address = "::1"
+                                } label: {
+                                    Label("IPv6 localhost", systemImage: "6.circle")
+                                }
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
                         }
                     }
                     .gridColumnAlignment(.leading)
@@ -174,6 +215,17 @@ struct DomainEditorView: View {
 
     private var canSave: Bool {
         !draft.normalizedDomain.isEmpty && validationMessage == nil
+    }
+
+    private var addressFamilyLabel: String? {
+        switch draft.addressFamily {
+        case .ipv4:
+            String(localized: "IPv4")
+        case .ipv6:
+            String(localized: "IPv6")
+        case nil:
+            nil
+        }
     }
 
     private var validationMessage: String? {

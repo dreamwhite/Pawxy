@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @AppStorage("defaultIPv4Address") private var defaultIPv4Address = "127.0.0.1"
+    @AppStorage("defaultIPv4Address") private var defaultIPAddress = "127.0.0.1"
     @AppStorage("alwaysShowEnvironmentSetup") private var alwaysShowEnvironmentSetup = false
     @AppStorage("didCompleteEnvironmentSetup") private var didCompleteEnvironmentSetup = false
     @AppStorage("showMenuBarExtra") private var showMenuBarExtra = true
@@ -17,7 +17,10 @@ struct SettingsView: View {
         TabView {
             Form {
                 Section("New domains") {
-                    TextField("Default IP address", text: $defaultIPv4Address)
+                    TextField("Default IP address", text: $defaultIPAddress)
+                    Text("Used as the initial value in Add Domain. IPv4 and IPv6 are supported.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                     Text("Pawxy domains cover the domain and its subdomains using a dnsmasq address directive.")
                         .font(.caption)
                         .foregroundStyle(.secondary)

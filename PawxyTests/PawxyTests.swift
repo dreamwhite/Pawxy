@@ -56,6 +56,13 @@ struct PawxyTests {
         let domain = try #require(draft.localDomain)
         #expect(domain.address == "2001:db8::1")
         #expect(IPAddress.matches(domain.address, "2001:db8:0:0::1"))
+        #expect(draft.addressFamily == .ipv6)
+
+        draft.address = "127.0.0.1"
+        #expect(draft.addressFamily == .ipv4)
+
+        draft.address = "not-an-address"
+        #expect(draft.addressFamily == nil)
     }
 
     @Test func draftRejectsUnsupportedDNSNamesAndAmbiguousIPv4Addresses() {

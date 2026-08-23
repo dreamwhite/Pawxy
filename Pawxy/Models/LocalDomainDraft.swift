@@ -6,6 +6,11 @@
 import Foundation
 
 struct LocalDomainDraft {
+    enum AddressFamily: Equatable {
+        case ipv4
+        case ipv6
+    }
+
     var domain = ""
     var address = "127.0.0.1"
     var wildcard = true
@@ -24,6 +29,11 @@ struct LocalDomainDraft {
         domain
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .lowercased()
+    }
+
+    var addressFamily: AddressFamily? {
+        guard let address = normalizedIPAddress else { return nil }
+        return IPAddress.isIPv6(address) ? .ipv6 : .ipv4
     }
 
     var validationMessage: String? {
