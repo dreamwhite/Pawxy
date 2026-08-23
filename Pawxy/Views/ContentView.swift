@@ -78,6 +78,9 @@ struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: .addPawxyDomain)) { _ in
             showDomainEditor()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .showPawxyOverview)) { _ in
+            destination = .overview
+        }
         .onReceive(NotificationCenter.default.publisher(for: .refreshPawxyMappings)) { _ in
             refreshMappings()
         }

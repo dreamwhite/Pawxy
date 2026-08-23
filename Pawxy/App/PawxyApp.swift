@@ -12,9 +12,10 @@ struct PawxyApp: App {
     @StateObject private var domainStore = DomainStore()
     @StateObject private var helperController = PrivilegedHelperController.shared
     @StateObject private var softwareUpdates = SoftwareUpdateController()
+    @AppStorage("showMenuBarExtra") private var showMenuBarExtra = true
 
     var body: some Scene {
-        WindowGroup {
+        Window("Pawxy", id: "pawxy-main") {
             AppRootView()
                 .environmentObject(domainStore)
                 .environmentObject(helperController)
@@ -30,14 +31,33 @@ struct PawxyApp: App {
                 .environmentObject(softwareUpdates)
         }
 
+        Window("About Pawxy", id: "pawxy-about") {
+            AboutView()
+                .environmentObject(softwareUpdates)
+        }
+        .defaultPosition(.center)
+        .windowResizability(.contentSize)
+
         Window("Pawxy Help", id: "pawxy-help") {
             HelpView()
         }
         .windowResizability(.contentSize)
+
+        MenuBarExtra(
+            "Pawxy",
+            systemImage: "pawprint.fill",
+            isInserted: $showMenuBarExtra
+        ) {
+            PawxyMenuBarView()
+                .environmentObject(domainStore)
+                .environmentObject(helperController)
+        }
+        .menuBarExtraStyle(.menu)
     }
 }
 
 extension Notification.Name {
+    static let showPawxyOverview = Notification.Name("showPawxyOverview")
     static let addPawxyDomain = Notification.Name("addPawxyDomain")
     static let refreshPawxyMappings = Notification.Name("refreshPawxyMappings")
     static let restartPawxyDnsmasq = Notification.Name("restartPawxyDnsmasq")
@@ -50,6 +70,12 @@ private struct PawxyCommands: Commands {
     @ObservedObject var softwareUpdates: SoftwareUpdateController
 
     var body: some Commands {
+        CommandGroup(replacing: .appInfo) {
+            Button("About Pawxy") {
+                openWindow(id: "pawxy-about")
+            }
+        }
+
         CommandGroup(after: .appInfo) {
             Button("Check for Updates…") {
                 softwareUpdates.checkForUpdates()

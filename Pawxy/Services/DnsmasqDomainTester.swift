@@ -13,6 +13,22 @@ nonisolated enum DomainResolutionTestResult: Equatable, Sendable {
     case mdnsConflict(domain: String)
     case mismatch(hostname: String, expected: String, received: [String])
     case failed(String)
+
+    var needsAttention: Bool {
+        switch self {
+        case .active, .disabled:
+            false
+        default:
+            true
+        }
+    }
+
+    var requiresResolverRepair: Bool {
+        if case .notRouted = self {
+            return true
+        }
+        return false
+    }
 }
 
 struct DnsmasqDomainTester {

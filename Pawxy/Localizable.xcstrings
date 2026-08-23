@@ -83,12 +83,32 @@
         }
       }
     },
+    "%lld active · %lld configured" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld attivi · %2$lld configurati"
+          }
+        }
+      }
+    },
     "%lld active mappings resolve correctly." : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$lld mapping attivi vengono risolti correttamente."
+          }
+        }
+      }
+    },
+    "%lld DNS issues found" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld problemi DNS rilevati"
           }
         }
       }
@@ -173,6 +193,16 @@
         }
       }
     },
+    "1 DNS issue found" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rilevato 1 problema DNS"
+          }
+        }
+      }
+    },
     "1 existing domain is skipped." : {
       "localizations" : {
         "it" : {
@@ -233,6 +263,26 @@
         }
       }
     },
+    "A native macOS utility for managing dnsmasq mappings, system resolvers, and local domain health from one focused workspace." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un’utility nativa per macOS che riunisce mapping dnsmasq, resolver di sistema e stato dei domini locali in un unico spazio di lavoro."
+          }
+        }
+      }
+    },
+    "About Pawxy" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Informazioni su Pawxy"
+          }
+        }
+      }
+    },
     "Active" : {
       "localizations" : {
         "it" : {
@@ -249,6 +299,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aggiungi dominio"
+          }
+        }
+      }
+    },
+    "Add Domain…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi dominio…"
           }
         }
       }
@@ -393,6 +453,16 @@
         }
       }
     },
+    "Built for local development with dnsmasq." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pensata per lo sviluppo locale con dnsmasq."
+          }
+        }
+      }
+    },
     "Bundle identifier" : {
       "localizations" : {
         "it" : {
@@ -443,12 +513,32 @@
         }
       }
     },
+    "Checking Domains…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifica domini…"
+          }
+        }
+      }
+    },
     "Checking enabled domains…" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Verifica dei domini abilitati…"
+          }
+        }
+      }
+    },
+    "Checking environment and domain resolution…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifica dell’ambiente e della risoluzione dei domini…"
           }
         }
       }
@@ -772,6 +862,16 @@
         }
       }
     },
+    "Discover mappings" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rileva mapping"
+          }
+        }
+      }
+    },
     "DNS" : {
       "localizations" : {
         "it" : {
@@ -885,6 +985,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "dnsmasq risolve %1$@ in %2$@, ma macOS non instrada il dominio verso dnsmasq. Usa Ripara resolver di sistema, quindi ripeti il test."
+          }
+        }
+      }
+    },
+    "dnsmasq restarted successfully" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "dnsmasq riavviato correttamente"
           }
         }
       }
@@ -1050,7 +1160,6 @@
       }
     },
     "Environment needs attention" : {
-      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -1222,6 +1331,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Per iniziare"
+          }
+        }
+      }
+    },
+    "GitHub" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub"
           }
         }
       }
@@ -1438,12 +1557,42 @@
         }
       }
     },
+    "Installed %lld missing resolvers" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installati %1$lld resolver mancanti"
+          }
+        }
+      }
+    },
+    "Installed one missing resolver" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installato un resolver mancante"
+          }
+        }
+      }
+    },
     "IPv4 address" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Indirizzo IPv4"
+          }
+        }
+      }
+    },
+    "Keep macOS routing in sync with local domains." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantiene l’instradamento di macOS sincronizzato con i domini locali."
           }
         }
       }
@@ -1475,6 +1624,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "DNS locale"
+          }
+        }
+      }
+    },
+    "Local DNS is healthy" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il DNS locale funziona correttamente"
           }
         }
       }
@@ -1569,6 +1728,16 @@
         }
       }
     },
+    "Manage resolvers" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gestisci resolver"
+          }
+        }
+      }
+    },
     "Managed domains" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1596,6 +1765,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mapping"
+          }
+        }
+      }
+    },
+    "Menu Bar" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Barra dei menu"
           }
         }
       }
@@ -1832,6 +2011,26 @@
         }
       }
     },
+    "Open Configuration Folder" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri cartella di configurazione"
+          }
+        }
+      }
+    },
+    "Open Help" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri Aiuto"
+          }
+        }
+      }
+    },
     "Open Local Domains to see mappings detected from dnsmasq automatically, or create a new domain with ⌘N. Use ⌘R after changing configuration files outside Pawxy." : {
       "localizations" : {
         "it" : {
@@ -1848,6 +2047,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apri Elementi login ed estensioni"
+          }
+        }
+      }
+    },
+    "Open Pawxy" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri Pawxy"
           }
         }
       }
@@ -1972,12 +2181,32 @@
         }
       }
     },
+    "Pawxy is running read-only" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pawxy è in modalità sola lettura"
+          }
+        }
+      }
+    },
     "Pawxy needs these local development tools before it can manage DNS." : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pawxy richiede questi strumenti di sviluppo locale prima di poter gestire il DNS."
+          }
+        }
+      }
+    },
+    "Pawxy operation failed" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Operazione Pawxy non riuscita"
           }
         }
       }
@@ -2072,6 +2301,26 @@
         }
       }
     },
+    "Quit Pawxy" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esci da Pawxy"
+          }
+        }
+      }
+    },
+    "Read existing dnsmasq configuration automatically." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Legge automaticamente la configurazione dnsmasq esistente."
+          }
+        }
+      }
+    },
     "Ready" : {
       "localizations" : {
         "it" : {
@@ -2098,6 +2347,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aggiorna"
+          }
+        }
+      }
+    },
+    "Refresh & Check Domains" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiorna e verifica domini"
           }
         }
       }
@@ -2142,12 +2401,32 @@
         }
       }
     },
+    "Repair Missing Resolvers…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripara resolver mancanti…"
+          }
+        }
+      }
+    },
     "Repair system resolver…" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ripara resolver di sistema…"
+          }
+        }
+      }
+    },
+    "Repairing Resolvers…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riparazione resolver…"
           }
         }
       }
@@ -2208,6 +2487,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Riavvio di dnsmasq"
+          }
+        }
+      }
+    },
+    "Restarting dnsmasq…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riavvio di dnsmasq…"
           }
         }
       }
@@ -2288,6 +2577,16 @@
         }
       }
     },
+    "Settings…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impostazioni…"
+          }
+        }
+      }
+    },
     "Setup required" : {
       "localizations" : {
         "it" : {
@@ -2325,6 +2624,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mostra nel Finder"
+          }
+        }
+      }
+    },
+    "Show Pawxy in the menu bar" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra Pawxy nella barra dei menu"
           }
         }
       }
@@ -2385,6 +2694,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Test"
+          }
+        }
+      }
+    },
+    "Test every mapping against dnsmasq and macOS." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifica ogni mapping con dnsmasq e macOS."
           }
         }
       }
@@ -2690,6 +3009,26 @@
         }
       }
     },
+    "Use the menu bar to check local DNS, restart dnsmasq, repair missing resolvers, and open Pawxy without keeping its window visible." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa la barra dei menu per verificare il DNS locale, riavviare dnsmasq, riparare i resolver mancanti e aprire Pawxy senza tenere visibile la finestra."
+          }
+        }
+      }
+    },
+    "Verify DNS" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifica DNS"
+          }
+        }
+      }
+    },
     "Verify this mapping through dnsmasq and the macOS system resolver." : {
       "localizations" : {
         "it" : {
@@ -2753,6 +3092,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mostra ambiente"
+          }
+        }
+      }
+    },
+    "View Issues" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra problemi"
           }
         }
       }

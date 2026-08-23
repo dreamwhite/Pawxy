@@ -11,6 +11,7 @@ struct SettingsView: View {
     @AppStorage("defaultIPv4Address") private var defaultIPv4Address = "127.0.0.1"
     @AppStorage("alwaysShowEnvironmentSetup") private var alwaysShowEnvironmentSetup = false
     @AppStorage("didCompleteEnvironmentSetup") private var didCompleteEnvironmentSetup = false
+    @AppStorage("showMenuBarExtra") private var showMenuBarExtra = true
 
     var body: some View {
         TabView {
@@ -28,6 +29,14 @@ struct SettingsView: View {
                     Button("Show setup on next launch") {
                         didCompleteEnvironmentSetup = false
                     }
+                }
+
+                Section("Menu Bar") {
+                    Toggle("Show Pawxy in the menu bar", isOn: $showMenuBarExtra)
+
+                    Text("Use the menu bar to check local DNS, restart dnsmasq, repair missing resolvers, and open Pawxy without keeping its window visible.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
             }
             .formStyle(.grouped)

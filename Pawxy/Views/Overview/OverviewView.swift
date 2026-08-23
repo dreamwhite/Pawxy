@@ -778,14 +778,3 @@ private struct OverviewHealthBadge: View {
         .fixedSize()
     }
 }
-
-private extension DomainResolutionTestResult {
-    var needsAttention: Bool {
-        switch self {
-        case .active, .disabled:
-            false
-        default:
-            true
-        }
-    }
-}

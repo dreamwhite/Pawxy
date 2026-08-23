@@ -25,6 +25,10 @@ nonisolated struct DnsmasqConfigurationManager {
         paths.rootConfiguration
     }
 
+    var configurationDirectoryPath: String {
+        paths.configurationDirectory
+    }
+
     var hasLegacyManagedConfiguration: Bool {
         guard fileManager.fileExists(atPath: paths.legacyManagedConfiguration),
               let contents = try? String(
